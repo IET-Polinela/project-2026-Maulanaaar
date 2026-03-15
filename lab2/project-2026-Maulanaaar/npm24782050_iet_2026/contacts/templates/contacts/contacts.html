@@ -1,0 +1,189 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Social Media</title>
+
+<!-- Font Awesome untuk icon modern -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    margin:0;
+    background-image:url("{% static '1.jpeg' %}");
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+    color:white;
+}
+
+/* container */
+.container{
+    width:900px;
+    margin:120px auto;
+    padding:40px;
+    border-radius:12px;
+    background:rgba(255,255,255,0.15);
+    backdrop-filter:blur(10px);
+}
+
+/* judul */
+.title{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+/* item baris */
+.item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:20px;
+    margin-bottom:20px;
+    border-radius:10px;
+    background:rgba(255,255,255,0.15);
+}
+
+/* kiri */
+.left{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+/* icon */
+.icon{
+    font-size:22px;
+}
+
+/* warna brand */
+.ig{color:#E1306C;}
+.tiktok{color:#ffffff;}
+.youtube{color:#FF0000;}
+.email{color:#ffffff;}
+.wa{color:#25D366;}
+.shopee{color:#EE4D2D;}
+
+/* tombol */
+.btn{
+    padding:8px 16px;
+    background:#3498db;
+    color:white;
+    text-decoration:none;
+    border-radius:6px;
+}
+
+.btn:hover{
+    background:#2c80b4;
+}
+
+/* tombol dashboard */
+.dashboard{
+    display:block;
+    width:200px;
+    margin:30px auto 0;
+    text-align:center;
+    padding:10px;
+    background:#3498db;
+    color:white;
+    text-decoration:none;
+    border-radius:6px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2 class="title">Social Media</h2>
+
+<!-- Instagram -->
+<div class="item">
+<div class="left">
+<i class="fa-brands fa-instagram icon ig"></i>
+<b>Instagram</b>
+</div>
+<a class="btn" href="https://www.instagram.com/mwlnna" target="_blank">
+Kunjungi
+</a>
+</div>
+
+<!-- TikTok -->
+<div class="item">
+<div class="left">
+<i class="fa-brands fa-tiktok icon tiktok"></i>
+<b>TikTok</b>
+</div>
+<a class="btn" href="https://www.tiktok.com/@mwlnna_" target="_blank">
+Kunjungi
+</a>
+</div>
+
+<!-- YouTube -->
+<div class="item">
+<div class="left">
+<i class="fa-brands fa-youtube icon youtube"></i>
+<b>YouTube</b>
+</div>
+<a class="btn" href="https://www.youtube.com/@maulanarizkii17" target="_blank">
+Kunjungi
+</a>
+</div>
+
+<!-- Email -->
+<div class="item">
+<div class="left">
+<i class="fa-solid fa-envelope icon email"></i>
+<b>Email</b>
+</div>
+<p>maulanaaarizki17@gmail.com</p>
+</div>
+
+
+<h2 class="title">Toko Kaus Kaki</h2>
+
+<!-- Instagram Toko -->
+<div class="item">
+<div class="left">
+<i class="fa-brands fa-instagram icon ig"></i>
+<b>Instagram Toko</b>
+</div>
+<a class="btn" href="https://www.instagram.com/usahamuda.id" target="_blank">
+Kunjungi
+</a>
+</div>
+
+<!-- WhatsApp -->
+<div class="item">
+<div class="left">
+<i class="fa-brands fa-whatsapp icon wa"></i>
+<b>WhatsApp</b>
+</div>
+<a class="btn" href="#" target="_blank">
+Chat
+</a>
+</div>
+
+<!-- Shopee -->
+<div class="item">
+<div class="left">
+<i class="fa-solid fa-store icon shopee"></i>
+<b>Shopee</b>
+</div>
+<a class="btn" href="#" target="_blank">
+Buka Toko
+</a>
+</div>
+
+<a href="/" class="dashboard">Kembali ke Dashboard</a>
+
+</div>
+
+</body>
+</html>

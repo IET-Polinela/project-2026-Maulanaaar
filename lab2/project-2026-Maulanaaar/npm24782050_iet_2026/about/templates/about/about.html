@@ -1,0 +1,132 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<title>Profil</title>
+
+<style>
+
+body{
+    font-family: Arial, sans-serif;
+    margin:0;
+
+    background-image: url("{% static '1.jpeg' %}");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+
+    color:white;
+}
+
+/* container utama (dibuat lebih lebar) */
+.container{
+
+    width:1200px;
+    margin:120px auto;
+
+    padding:40px;
+
+    border-radius:12px;
+
+    background:rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
+}
+
+/* judul utama */
+.title{
+    text-align:center;
+    font-size:28px;
+    margin-bottom:30px;
+}
+
+/* layout 2 kolom */
+.content{
+    display:flex;
+    justify-content:space-between;
+    gap:100px;
+}
+
+/* kolom */
+.column{
+    width:50%;
+}
+
+/* judul section */
+.column h2{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+/* teks diratakan kanan kiri */
+.column p{
+
+    text-align:justify;
+    font-size:15px;
+    line-height:1.8;
+
+}
+
+/* tombol */
+.btn{
+
+    display:block;
+    width:200px;
+
+    margin:40px auto 0;
+
+    text-align:center;
+
+    padding:10px;
+
+    background:#3498db;
+    color:white;
+
+    text-decoration:none;
+    border-radius:6px;
+}
+
+.btn:hover{
+    background:#2c80b4;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1 class="title">Profil</h1>
+
+<div class="content">
+
+<div class="column">
+
+<h2>Data Pribadi</h2>
+
+<p><b>Nama :</b> Maulana Rizki Ramadhani</p>
+<p><b>Umur :</b> 20 Tahun</p>
+<p><b>Tanggal Lahir :</b> 17 Oktober 2005</p>
+
+</div>
+
+<div class="column">
+
+<h2>Riwayat Pendidikan</h2>
+
+<p><b>SD :</b> Muhammadiyah 1 Labuhan Ratu Bandar Lampung</p>
+<p><b>SMP :</b> Muhammadiyah 3 Labuhan Ratu Bandar Lampung</p>
+<p><b>SMK :</b> SMKN 2 Bandar Lampung - Teknik Komputer Jaringan</p>
+<p><b>KULIAH :</b> Politeknik Negeri Lampung - Teknologi Rekayasa Internet</p>
+
+</div>
+
+</div>
+
+<a href="/" class="btn">Kembali ke Dashboard</a>
+
+</div>
+
+</body>
+</html>
