@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daftar Laporan</title>
+</head>
+<body>
+
+    <h1>Daftar Laporan</h1>
+    <p>Desa Hajimena Natar Lampung Selatan</p>
+
+    <a href="/add/">Tambah Laporan</a>
+
+    <hr>
+
+    {% for report in reports %}
+        <div>
+            <p><b>Judul:</b> {{ report.title }}</p>
+            <p><b>Kategori:</b> {{ report.category }}</p>
+            <p><b>Deskripsi:</b> {{ report.description }}</p>
+            <p><b>Lokasi:</b> {{ report.location }}</p>
+            <p><b>Status:</b> {{ report.status }}</p>
+            <p><b>Dibuat:</b> {{ report.created_at }}</p>
+            <a href="{% url 'edit_report' report.pk %}">Edit</a>
+            <a href="{% url 'delete_report' report.pk %}">Delete</a>
+        </div>
+        <hr>
+    {% empty %}
+        <p>Belum ada laporan</p>
+    {% endfor %}
+
+</body>
+</html>
