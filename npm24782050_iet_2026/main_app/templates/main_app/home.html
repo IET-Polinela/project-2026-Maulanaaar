@@ -1,151 +1,142 @@
-{% load static %}
-
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Daftar Laporan</title>
 
-<title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
 
-<style>
+        h1 {
+            text-align: center;
+        }
 
-body{
-    font-family: Arial, sans-serif;
-    margin:0;
-    background-image:url("{% static '4.jpeg' %}");
-    background-size:cover;
-    background-position:center;
-}
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
 
-/* overlay agar tulisan tetap terlihat */
-.overlay{
-    background:rgba(0,0,0,0.45);
-    min-height:100vh;
-    padding-top:120px;
-}
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-/* judul */
-.title{
-    text-align:center;
-    color:white;
-    font-size:34px;
-    margin-bottom:50px;
-}
+        .btn-add {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
 
-/* container menu */
-.menu{
-    width:60%;
-    margin:auto;
+        .card {
+            background-color: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
 
-    display:flex;
-    justify-content:center;
-    gap:40px;
-}
+        .card p {
+            margin: 5px 0;
+        }
 
-/* card fitur transparan */
-.card{
+        .actions {
+            margin-top: 10px;
+        }
 
-    width:320px;
-    padding:30px;
+        .actions a,
+        .actions button {
+            margin-right: 10px;
+            padding: 6px 10px;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            cursor: pointer;
+        }
 
-    border-radius:12px;
+        .edit {
+            background-color: #2196F3;
+            color: white;
+        }
 
-    background:rgba(255,255,255,0.15);
-    backdrop-filter:blur(10px);
+        .delete {
+            background-color: #f44336;
+            color: white;
+        }
 
-    text-align:center;
-    color:white;
-}
-
-.card h2{
-    margin-bottom:10px;
-}
-
-.card p{
-    margin-bottom:20px;
-}
-
-/* tombol */
-.btn{
-    text-decoration:none;
-    background:#3498db;
-    color:white;
-    padding:10px 18px;
-    border-radius:6px;
-}
-
-.btn:hover{
-    background:#2c80b4;
-}
-
-/* info lokasi */
-.info-section{
-    text-align:center;
-    color:white;
-    margin-top:80px;
-    padding:30px;
-}
-
-.info-section h3{
-    font-size:20px;
-    margin-bottom:10px;
-}
-
-.info-section p{
-    font-size:18px;
-    margin:5px 0;
-}
-
-</style>
-
+        .workflow {
+            background-color: #ff9800;
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="overlay">
+<div class="container">
 
-<h1 class="title">SELAMAT DATANG</h1>
+    <div class="header">
+        <h1>Daftar Laporan</h1>
+        <p>Desa Hajimena Natar Lampung Selatan</p>
+        <a href="/add/" class="btn-add">+ Tambah Laporan</a>
+    </div>
 
-<div class="menu">
+    {% for report in reports %}
+        <div class="card">
 
-<div class="card">
+            <p><strong>Judul:</strong> {{ report.title }}</p>
+            <p><strong>Kategori:</strong> {{ report.category }}</p>
+            <p><strong>Deskripsi:</strong> {{ report.description }}</p>
+            <p><strong>Lokasi:</strong> {{ report.location }}</p>
+            <p><strong>Status:</strong> {{ report.status }}</p>
+            <p><strong>Dibuat:</strong> {{ report.created_at }}</p>
 
-<h2>Profil Lengkap</h2>
-<p>Lihat informasi lengkap tentang saya</p>
+            <div class="actions">
+                <a href="{% url 'edit_report' report.pk %}" class="edit">Edit</a>
+                <a href="{% url 'delete_report' report.pk %}" class="delete">Delete</a>
+            </div>
 
-<a class="btn" href="/about/">
-Lihat Profil
-</a>
+            <!-- 🔥 WORKFLOW BUTTON -->
+            <div class="actions">
 
-</div>
+                {% if report.status == 'REPORTED' %}
+                <form method="post" action="{% url 'update_status' report.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="VERIFIED">
+                    <button class="workflow">Verify</button>
+                </form>
+                {% endif %}
 
-<div class="card">
+                {% if report.status == 'VERIFIED' %}
+                <form method="post" action="{% url 'update_status' report.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="IN_PROGRESS">
+                    <button class="workflow">Start Progress</button>
+                </form>
+                {% endif %}
 
-<h2>Daftar Laporan</h2>
-<p>Lihat semua laporan yang telah dibuat</p>
+                {% if report.status == 'IN_PROGRESS' %}
+                <form method="post" action="{% url 'update_status' report.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="RESOLVED">
+                    <button class="workflow">Resolve</button>
+                </form>
+                {% endif %}
 
-<a class="btn" href="/reports/">
-Lihat Laporan
-</a>
+            </div>
 
-</div>
+        </div>
 
-<div class="card">
-
-<h2>Social Media</h2>
-<p>Kunjungi sosial media saya</p>
-
-<a class="btn" href="/contacts/">
-Lihat Social Media
-</a>
-
-</div>
-
-</div>
-
-<div class="info-section">
-<h3>Daftar Laporan</h3>
-<p>Desa Hajimena Natar Lampung Selatan</p>
-</div>
+    {% empty %}
+        <p style="text-align:center;">Belum ada laporan</p>
+    {% endfor %}
 
 </div>
 
