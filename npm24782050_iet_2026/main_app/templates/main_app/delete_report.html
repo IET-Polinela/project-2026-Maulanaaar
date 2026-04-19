@@ -1,23 +1,35 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Hapus Laporan</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-    <h1>Hapus Laporan</h1>
+{% block title %}Hapus Laporan{% endblock %}
 
-    <p>Apakah Anda yakin ingin menghapus laporan ini?</p>
+{% block content %}
 
-    <p><b>Judul:</b> {{ report.title }}</p>
-    <p><b>Kategori:</b> {{ report.category }}</p>
+<div class="card shadow-sm">
+    <div class="card-body">
 
-    <form method="POST">
-        {% csrf_token %}
-        <button type="submit">Ya, Hapus</button>
-    </form>
+        <h3 class="text-danger">⚠️ Hapus Laporan</h3>
+        <p class="mt-3">Apakah Anda yakin ingin menghapus laporan ini?</p>
 
-    <a href="{% url 'home' %}">Batal</a>
+        <hr>
 
-</body>
-</html>
+        <p><strong>Judul:</strong> {{ object.title }}</p>
+        <p><strong>Kategori:</strong> {{ object.category }}</p>
+        <p><strong>Lokasi:</strong> {{ object.location }}</p>
+
+        <form method="POST" class="mt-3">
+            {% csrf_token %}
+
+            <button type="submit" class="btn btn-danger"
+                onclick="return confirm('Yakin ingin menghapus laporan ini?')">
+                Ya, Hapus
+            </button>
+
+            <a href="{% url 'home' %}" class="btn btn-secondary">
+                Batal
+            </a>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

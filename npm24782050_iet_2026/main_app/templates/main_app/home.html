@@ -1,144 +1,45 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Daftar Laporan</title>
+{% extends 'base.html' %}
+{% load static %}
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
-            margin: 0;
-            padding: 20px;
-        }
+{% block content %}
 
-        h1 {
-            text-align: center;
-        }
+<!-- 🔥 HERO SECTION -->
+<div style="
+    background: url('{% static 'hajimena3.jpeg' %}') no-repeat center center;
+    background-size: cover;
+    height: 80vh;
+    position: relative;
+    border-radius: 10px;
+">
 
-        .container {
-            max-width: 900px;
-            margin: auto;
-        }
+    <!-- overlay gelap biar teks kebaca -->
+    <div style="
+        background: rgba(0,0,0,0.5);
+        height: 100%;
+        width: 100%;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    ">
 
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+        <div class="text-center text-white">
 
-        .btn-add {
-            display: inline-block;
-            padding: 10px 15px;
-            background-color: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
+            <h1 class="mb-3 fw-bold">Hajimena Natar, Lampung Selatan</h1>
+            <p class="mb-4">Sistem Pelaporan Masyarakat Desa Hajimena</p>
 
-        .card {
-            background-color: white;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+            <a href="{% url 'report_list' %}" class="btn btn-primary btn-lg me-2">
+                📋 Lihat Laporan
+            </a>
 
-        .card p {
-            margin: 5px 0;
-        }
-
-        .actions {
-            margin-top: 10px;
-        }
-
-        .actions a,
-        .actions button {
-            margin-right: 10px;
-            padding: 6px 10px;
-            border: none;
-            border-radius: 4px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .edit {
-            background-color: #2196F3;
-            color: white;
-        }
-
-        .delete {
-            background-color: #f44336;
-            color: white;
-        }
-
-        .workflow {
-            background-color: #ff9800;
-            color: white;
-        }
-    </style>
-</head>
-
-<body>
-
-<div class="container">
-
-    <div class="header">
-        <h1>Daftar Laporan</h1>
-        <p>Desa Hajimena Natar Lampung Selatan</p>
-        <a href="/add/" class="btn-add">+ Tambah Laporan</a>
-    </div>
-
-    {% for report in reports %}
-        <div class="card">
-
-            <p><strong>Judul:</strong> {{ report.title }}</p>
-            <p><strong>Kategori:</strong> {{ report.category }}</p>
-            <p><strong>Deskripsi:</strong> {{ report.description }}</p>
-            <p><strong>Lokasi:</strong> {{ report.location }}</p>
-            <p><strong>Status:</strong> {{ report.status }}</p>
-            <p><strong>Dibuat:</strong> {{ report.created_at }}</p>
-
-            <div class="actions">
-                <a href="{% url 'edit_report' report.pk %}" class="edit">Edit</a>
-                <a href="{% url 'delete_report' report.pk %}" class="delete">Delete</a>
-            </div>
-
-            <!-- 🔥 WORKFLOW BUTTON -->
-            <div class="actions">
-
-                {% if report.status == 'REPORTED' %}
-                <form method="post" action="{% url 'update_status' report.id %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="status" value="VERIFIED">
-                    <button class="workflow">Verify</button>
-                </form>
-                {% endif %}
-
-                {% if report.status == 'VERIFIED' %}
-                <form method="post" action="{% url 'update_status' report.id %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="status" value="IN_PROGRESS">
-                    <button class="workflow">Start Progress</button>
-                </form>
-                {% endif %}
-
-                {% if report.status == 'IN_PROGRESS' %}
-                <form method="post" action="{% url 'update_status' report.id %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="status" value="RESOLVED">
-                    <button class="workflow">Resolve</button>
-                </form>
-                {% endif %}
-
-            </div>
+            <a href="{% url 'add_report' %}" class="btn btn-success btn-lg">
+                ➕ Tambah Laporan
+            </a>
 
         </div>
 
-    {% empty %}
-        <p style="text-align:center;">Belum ada laporan</p>
-    {% endfor %}
+    </div>
 
 </div>
 
-</body>
-</html>
+{% endblock %}

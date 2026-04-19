@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2 class="mb-3">📋 Daftar Laporan</h2>
+
+<a href="{% url 'add_report' %}" class="btn btn-success mb-3">+ Tambah Laporan</a>
+
+<div class="table-responsive">
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Judul</th>
+            <th>Lokasi</th>
+            <th>Status</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for report in reports %}
+        <tr>
+            <td>{{ report.title }}</td>
+            <td>{{ report.location }}</td>
+
+            <td>
+                {% if report.status == 'REPORTED' %}
+                    <span class="badge bg-secondary">Reported</span>
+                {% elif report.status == 'VERIFIED' %}
+                    <span class="badge bg-primary">Verified</span>
+                {% elif report.status == 'IN_PROGRESS' %}
+                    <span class="badge bg-warning text-dark">In Progress</span>
+                {% elif report.status == 'RESOLVED' %}
+                    <span class="badge bg-success">Resolved</span>
+                {% endif %}
+            </td>
+
+            <td>
+                <a href="{% url 'edit_report' report.pk %}" class="btn btn-sm btn-primary">Edit</a>
+                <a href="{% url 'delete_report' report.pk %}" class="btn btn-sm btn-danger">Delete</a>
+
+                <br><br>
+
+                {% if report.status == 'REPORTED' %}
+                <form method="post" action="{% url 'update_status' report.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="VERIFIED">
+                    <button class="btn btn-warning btn-sm">Verify</button>
+                </form>
+                {% endif %}
+
+                {% if report.status == 'VERIFIED' %}
+                <form method="post" action="{% url 'update_status' report.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="IN_PROGRESS">
+                    <button class="btn btn-warning btn-sm">Start</button>
+                </form>
+                {% endif %}
+
+                {% if report.status == 'IN_PROGRESS' %}
+                <form method="post" action="{% url 'update_status' report.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="RESOLVED">
+                    <button class="btn btn-success btn-sm">Resolve</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+
+        {% empty %}
+        <tr>
+            <td colspan="4" class="text-center">Belum ada laporan</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+{% endblock %}
