@@ -4,10 +4,12 @@
 
 <h2 class="mb-3">📋 Daftar Laporan</h2>
 
-<a href="{% url 'add_report' %}" class="btn btn-success mb-3">+ Tambah Laporan</a>
+<a href="{% url 'add_report' %}" class="btn btn-success mb-3">
+    ➕ Tambah Laporan
+</a>
 
 <div class="table-responsive">
-<table class="table table-bordered table-striped">
+<table class="table table-bordered table-striped align-middle">
     <thead class="table-dark">
         <tr>
             <th>Judul</th>
@@ -23,6 +25,7 @@
             <td>{{ report.title }}</td>
             <td>{{ report.location }}</td>
 
+            <!-- STATUS -->
             <td>
                 {% if report.status == 'REPORTED' %}
                     <span class="badge bg-secondary">Reported</span>
@@ -35,12 +38,23 @@
                 {% endif %}
             </td>
 
+            <!-- AKSI -->
             <td>
-                <a href="{% url 'edit_report' report.pk %}" class="btn btn-sm btn-primary">Edit</a>
-                <a href="{% url 'delete_report' report.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                <!-- EDIT -->
+                <a href="{% url 'edit_report' report.pk %}" class="btn btn-sm btn-primary">
+                    Edit
+                </a>
+
+                <!-- DELETE + CONFIRM -->
+                <a href="{% url 'delete_report' report.pk %}" 
+                   class="btn btn-sm btn-danger"
+                   onclick="return confirm('Yakin ingin menghapus laporan ini?')">
+                    Delete
+                </a>
 
                 <br><br>
 
+                <!-- STATUS BUTTON -->
                 {% if report.status == 'REPORTED' %}
                 <form method="post" action="{% url 'update_status' report.id %}">
                     {% csrf_token %}
@@ -68,8 +82,22 @@
         </tr>
 
         {% empty %}
+        <!-- 🔥 EMPTY STATE FIX -->
         <tr>
-            <td colspan="4" class="text-center">Belum ada laporan</td>
+            <td colspan="4">
+                <div class="text-center py-5">
+
+                    <h4 class="mb-2">📭 Belum ada laporan</h4>
+                    <p class="text-muted mb-3">
+                        Silakan tambahkan laporan pertama Anda
+                    </p>
+
+                    <a href="{% url 'add_report' %}" class="btn btn-success">
+                        ➕ Tambah Laporan
+                    </a>
+
+                </div>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
