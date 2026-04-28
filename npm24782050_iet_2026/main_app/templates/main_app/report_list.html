@@ -4,9 +4,11 @@
 
 <h2 class="mb-3">📋 Daftar Laporan</h2>
 
+{% if user.is_authenticated and user.is_admin %}
 <a href="{% url 'add_report' %}" class="btn btn-success mb-3">
     ➕ Tambah Laporan
 </a>
+{% endif %}
 
 <div class="table-responsive">
 <table class="table table-bordered table-striped align-middle">
@@ -25,7 +27,6 @@
             <td>{{ report.title }}</td>
             <td>{{ report.location }}</td>
 
-            <!-- STATUS -->
             <td>
                 {% if report.status == 'REPORTED' %}
                     <span class="badge bg-secondary">Reported</span>
@@ -38,70 +39,129 @@
                 {% endif %}
             </td>
 
-            <!-- AKSI -->
             <td>
-                <!-- EDIT -->
+
+                <a href="{% url 'report_detail' report.pk %}" class="btn btn-sm btn-info">
+                    Detail
+                </a>
+
+                {% if user.is_authenticated and user.is_admin %}
+
                 <a href="{% url 'edit_report' report.pk %}" class="btn btn-sm btn-primary">
                     Edit
                 </a>
 
-                <!-- DELETE + CONFIRM -->
-                <a href="{% url 'delete_report' report.pk %}" 
-                   class="btn btn-sm btn-danger"
-                   onclick="return confirm('Yakin ingin menghapus laporan ini?')">
+                <!-- 🔥 DELETE BUTTON -->
+                <button class="btn btn-sm btn-danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteModal{{ report.id }}">
                     Delete
-                </a>
+                </button>
 
                 <br><br>
 
-                <!-- STATUS BUTTON -->
+                <!-- 🔥 STATUS FLOW -->
                 {% if report.status == 'REPORTED' %}
-                <form method="post" action="{% url 'update_status' report.id %}">
+                <form method="POST" action="{% url 'update_status' report.id %}">
                     {% csrf_token %}
                     <input type="hidden" name="status" value="VERIFIED">
-                    <button class="btn btn-warning btn-sm">Verify</button>
+                    <button class="btn btn-warning btn-sm">
+                        Verify
+                    </button>
                 </form>
                 {% endif %}
 
                 {% if report.status == 'VERIFIED' %}
-                <form method="post" action="{% url 'update_status' report.id %}">
+                <form method="POST" action="{% url 'update_status' report.id %}">
                     {% csrf_token %}
                     <input type="hidden" name="status" value="IN_PROGRESS">
-                    <button class="btn btn-warning btn-sm">Start</button>
+                    <button class="btn btn-warning btn-sm">
+                        Start
+                    </button>
                 </form>
                 {% endif %}
 
                 {% if report.status == 'IN_PROGRESS' %}
-                <form method="post" action="{% url 'update_status' report.id %}">
+                <form method="POST" action="{% url 'update_status' report.id %}">
                     {% csrf_token %}
                     <input type="hidden" name="status" value="RESOLVED">
-                    <button class="btn btn-success btn-sm">Resolve</button>
+                    <button class="btn btn-success btn-sm">
+                        Resolve
+                    </button>
                 </form>
                 {% endif %}
+
+                {% endif %}
+
             </td>
         </tr>
 
-        {% empty %}
-        <!-- 🔥 EMPTY STATE FIX -->
-        <tr>
-            <td colspan="4">
-                <div class="text-center py-5">
+        <!-- 🔥 MODAL DELETE -->
+        <div class="modal fade" id="deleteModal{{ report.id }}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content text-center">
 
-                    <h4 class="mb-2">📭 Belum ada laporan</h4>
-                    <p class="text-muted mb-3">
-                        Silakan tambahkan laporan pertama Anda
-                    </p>
+                    <div class="modal-body p-4">
 
-                    <a href="{% url 'add_report' %}" class="btn btn-success">
-                        ➕ Tambah Laporan
-                    </a>
+                        <h4 class="text-danger mb-2">❌ Hapus Laporan</h4>
+
+                        <p class="text-muted">
+                            Apakah Anda yakin ingin menghapus laporan ini?
+                        </p>
+
+                        <strong>{{ report.title }}</strong>
+
+                        <form method="POST"
+                              action="{% url 'delete_report' report.pk %}"
+                              onsubmit="handleDelete(this)">
+
+                            {% csrf_token %}
+
+                            <div class="mt-3">
+                                <button type="button"
+                                        class="btn btn-secondary"
+                                        data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+
+                                <button type="submit" class="btn btn-danger">
+                                    <span class="text-btn">Delete</span>
+                                    <span class="spinner-border spinner-border-sm d-none"></span>
+                                </button>
+                            </div>
+
+                        </form>
+
+                    </div>
 
                 </div>
-            </td>
-        </tr>
+            </div>
+        </div>
+
         {% endfor %}
     </tbody>
 </table>
 </div>
+
+<!-- 🔥 SCRIPT DELETE LOADING -->
+<script>
+function handleDelete(form) {
+
+    const btn = form.querySelector('button[type="submit"]');
+    const text = btn.querySelector('.text-btn');
+    const spinner = btn.querySelector('.spinner-border');
+
+    btn.disabled = true;
+    text.innerText = "Menghapus...";
+    spinner.classList.remove('d-none');
+
+    // delay 3 detik
+    setTimeout(() => {
+        form.submit();
+    }, 3000);
+
+    return false; // tahan submit dulu
+}
+</script>
 
 {% endblock %}

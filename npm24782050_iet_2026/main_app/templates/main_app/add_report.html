@@ -19,6 +19,7 @@
                 </div>
                 {% endif %}
 
+                <!-- 🔥 FORM -->
                 <form method="POST" id="reportForm">
                     {% csrf_token %}
 
@@ -44,7 +45,7 @@
 
                     <div class="d-flex gap-2">
 
-                        <!-- 🔥 BUTTON -->
+                        <!-- 🔥 BUTTON SUBMIT -->
                         <button type="submit" class="btn btn-success" id="submitBtn">
                             💾 Simpan
                         </button>
@@ -63,25 +64,26 @@
     </div>
 </div>
 
-<!-- 🔥 SCRIPT LOADING + DELAY -->
+<!-- 🔥 SCRIPT DELAY + LOADING -->
 <script>
-    document.getElementById("reportForm").addEventListener("submit", function (e) {
-        e.preventDefault(); // tahan submit dulu
+document.getElementById("reportForm").addEventListener("submit", function (e) {
 
-        const btn = document.getElementById("submitBtn");
+    e.preventDefault(); // tahan submit dulu
 
-        // 🔄 ubah jadi spinner bulat
-        btn.innerHTML = `
-            <span class="spinner-border spinner-border-sm me-2"></span>
-            Menyimpan...
-        `;
-        btn.disabled = true;
+    const btn = document.getElementById("submitBtn");
 
-        // ⏳ delay 3 detik (bisa ubah ke 5000 kalau mau 5 detik)
-        setTimeout(() => {
-            e.target.submit(); // lanjut submit
-        }, 3000);
-    });
+    // 🔥 ubah jadi loading
+    btn.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Menyimpan...
+    `;
+    btn.disabled = true;
+
+    // ⏳ delay 3 detik
+    setTimeout(() => {
+        e.target.submit();
+    }, 3000);
+});
 </script>
 
 {% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+
+        <div class="card shadow-sm mt-5">
+            <div class="card-body">
+
+                <h3 class="mb-3 text-center">🔐 Login</h3>
+
+                <!-- 🔥 ALERT DARI DJANGO MESSAGES (opsional tampil di halaman ini) -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- 🔥 ALERT GAGAL LOGIN -->
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    ❌ Username atau password salah
+                </div>
+                {% endif %}
+
+                <!-- 🔥 FORM -->
+                <form method="POST" id="loginForm">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        {{ form.username }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        {{ form.password }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100" id="loginBtn">
+                        Login
+                    </button>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- 🔥 SCRIPT LOADING -->
+<script>
+document.getElementById("loginForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const btn = document.getElementById("loginBtn");
+
+    btn.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-2"></span>
+        Memproses...
+    `;
+    btn.disabled = true;
+
+    setTimeout(() => {
+        e.target.submit();
+    }, 3000);
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <h3 class="mb-3">📄 Detail Laporan</h3>
+
+        <p><strong>Judul:</strong> {{ report.title }}</p>
+        <p><strong>Kategori:</strong> {{ report.category }}</p>
+
+        <p><strong>Deskripsi:</strong></p>
+        <p class="text-muted">{{ report.description }}</p>
+
+        <p><strong>Lokasi:</strong> {{ report.location }}</p>
+
+        <p><strong>Status:</strong>
+            <span class="badge bg-info">{{ report.status }}</span>
+        </p>
+
+        <a href="{% url 'report_list' %}" class="btn btn-secondary">
+            Kembali
+        </a>
+
+    </div>
+</div>
+
+{% endblock %}
