@@ -4,7 +4,7 @@ from django.contrib.auth import views as auth_views
 from django.contrib import messages
 
 
-# 🔥 CUSTOM LOGIN VIEW (BIAR ADA ALERT SUKSES)
+# 🔥 CUSTOM LOGIN VIEW
 class CustomLoginView(auth_views.LoginView):
     template_name = 'login.html'
 
@@ -23,11 +23,14 @@ urlpatterns = [
     # 🔥 USER MANAGEMENT
     path('user/', include('usermanagement_24782050.urls')),
 
-    # 🔥 LOGIN (SUDAH CUSTOM)
+    # 🔥 LOGIN
     path('login/', CustomLoginView.as_view(), name='login'),
 
     # 🔥 LOGOUT
     path('logout/', auth_views.LogoutView.as_view(
         next_page='home'
     ), name='logout'),
+
+    # 🔥 INI YANG KAMU KURANG
+    path('dashboard/', include('dashboard_24782050.urls')),
 ]

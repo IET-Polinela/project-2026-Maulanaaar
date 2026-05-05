@@ -1,34 +1,46 @@
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView, DetailView
+from django.views.generic import (
+    TemplateView, ListView, CreateView, UpdateView, DeleteView, DetailView
+)
 from django.views import View
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.http import JsonResponse
+from django.db.models import Q
 
 from .models import Report
 from .forms import ReportForm
 
 
+# =========================================
 # 🔥 HOME
+# =========================================
 class HomeView(TemplateView):
     template_name = 'main_app/home.html'
 
 
-# 🔥 LIST
+# =========================================
+# 🔥 LIST REPORT
+# =========================================
 class ReportListView(ListView):
     model = Report
     template_name = 'main_app/report_list.html'
     context_object_name = 'reports'
 
 
-# 🔥 DETAIL
+# =========================================
+# 🔥 DETAIL (OPTIONAL - bisa dihapus kalau pakai modal)
+# =========================================
 class ReportDetailView(DetailView):
     model = Report
     template_name = 'main_app/report_detail.html'
     context_object_name = 'report'
 
 
+# =========================================
 # 🔥 ADMIN CHECK
+# =========================================
 class AdminRequiredMixin(UserPassesTestMixin):
     def test_func(self):
         return self.request.user.is_authenticated and getattr(self.request.user, 'is_admin', False)
@@ -38,7 +50,9 @@ class AdminRequiredMixin(UserPassesTestMixin):
         return redirect('report_list')
 
 
+# =========================================
 # 🔥 CREATE
+# =========================================
 class ReportCreateView(AdminRequiredMixin, CreateView):
     model = Report
     form_class = ReportForm
@@ -50,7 +64,9 @@ class ReportCreateView(AdminRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
+# =========================================
 # 🔥 UPDATE
+# =========================================
 class ReportUpdateView(AdminRequiredMixin, UpdateView):
     model = Report
     form_class = ReportForm
@@ -62,7 +78,9 @@ class ReportUpdateView(AdminRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
+# =========================================
 # 🔥 DELETE
+# =========================================
 class ReportDeleteView(AdminRequiredMixin, DeleteView):
     model = Report
     success_url = reverse_lazy('report_list')
@@ -72,11 +90,11 @@ class ReportDeleteView(AdminRequiredMixin, DeleteView):
         return super().post(request, *args, **kwargs)
 
 
-# 🔥 UPDATE STATUS (FIX FINAL)
+# =========================================
+# 🔥 UPDATE STATUS
+# =========================================
 class ReportUpdateStatusView(View):
     def post(self, request, pk):
-
-        print("MASUK UPDATE STATUS")  # 🔥 DEBUG
 
         # 🔐 CEK ADMIN
         if not request.user.is_authenticated or not getattr(request.user, 'is_admin', False):
@@ -85,20 +103,60 @@ class ReportUpdateStatusView(View):
 
         report = get_object_or_404(Report, pk=pk)
 
-        # 🔥 AMBIL STATUS
         new_status = request.POST.get('status')
-        print("STATUS BARU:", new_status)
 
-        # 🔥 VALIDASI
         allowed_status = ['REPORTED', 'VERIFIED', 'IN_PROGRESS', 'RESOLVED']
 
         if new_status not in allowed_status:
             messages.error(request, "❌ Status tidak valid!")
             return redirect('report_list')
 
-        # 🔥 UPDATE
         report.status = new_status
         report.save()
 
         messages.success(request, f"🔄 Status diubah ke {new_status}")
         return redirect('report_list')
+
+
+# =========================================
+# 🔥 API DETAIL (UNTUK MODAL)
+# =========================================
+def report_detail_api(request, pk):
+    report = get_object_or_404(Report, pk=pk)
+
+    data = {
+        'title': report.title,
+        'category': report.category,
+        'description': report.description,
+        'location': report.location,
+        'status': report.status,
+    }
+
+    return JsonResponse(data)
+
+
+# =========================================
+# 🔥 LIVE SEARCH API
+# =========================================
+def report_search_api(request):
+    query = request.GET.get('q', '')
+
+    reports = Report.objects.filter(
+        Q(title__icontains=query) |
+        Q(location__icontains=query) |
+        Q(category__icontains=query)
+    )
+
+    data = {
+        "reports": [
+            {
+                "id": r.id,
+                "title": r.title,
+                "location": r.location,
+                "status": r.status
+            }
+            for r in reports
+        ]
+    }
+
+    return JsonResponse(data)

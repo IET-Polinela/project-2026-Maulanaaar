@@ -24,6 +24,7 @@ INSTALLED_APPS = [
 
     # 🔥 USER MANAGEMENT
     'usermanagement_24782050',
+    'dashboard_24782050',
 ]
 
 

@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<style>
+.card-hover {
+    transition: 0.2s;
+}
+.card-hover:hover {
+    transform: translateY(-3px);
+}
+
+.hover-item {
+    transition: 0.2s ease;
+    cursor: pointer;
+}
+.hover-item:hover {
+    background-color: #f1f5ff;
+    transform: translateX(4px);
+}
+
+/* 🔥 FIX HEIGHT CHART */
+.chart-container {
+    position: relative;
+    height: 350px;
+}
+
+</style>
+
+<h3 class="mb-1">📊 Dashboard Statistik Laporan</h3>
+<p class="text-muted mb-4">Ringkasan laporan masyarakat secara realtime</p>
+
+<!-- 🔥 STAT CARDS -->
+<div class="row mb-4">
+
+    <div class="col-md-4">
+        <div class="card shadow-sm p-3 card-hover border-0 rounded-4">
+            <h6 class="text-muted">Total Laporan</h6>
+            <h2>{{ total }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm p-3 card-hover border-0 rounded-4">
+            <h6 class="text-muted">Status Reported</h6>
+            <h2>{{ reported }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm p-3 card-hover border-0 rounded-4">
+            <h6 class="text-muted">Status Resolved</h6>
+            <h2>{{ resolved }}</h2>
+        </div>
+    </div>
+
+</div>
+
+<!-- 🔥 CHART (FIX SEJAJAR) -->
+<div class="row align-items-stretch">
+
+    <!-- 🔵 STATUS -->
+    <div class="col-md-6 d-flex">
+        <div class="card p-3 shadow-sm border-0 rounded-4 w-100 h-100">
+            <h5 class="mb-3">📌 Status Laporan</h5>
+            <div class="chart-container">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🟡 KATEGORI -->
+    <div class="col-md-6 d-flex">
+        <div class="card p-3 shadow-sm border-0 rounded-4 w-100 h-100">
+            <h5 class="mb-3">📂 Kategori Laporan</h5>
+            <div class="chart-container">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- 🔥 RECENT DATA -->
+<div class="row mt-4">
+
+    <!-- 🔥 TERBARU -->
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body">
+
+                <h5 class="mb-3">🆕 Laporan Terbaru</h5>
+
+                {% for report in latest_reports %}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded hover-item">
+
+                    <div>
+                        <strong>{{ report.title }}</strong><br>
+                        <small class="text-muted">{{ report.category }}</small>
+                    </div>
+
+                    <span class="badge 
+                        {% if report.status == 'REPORTED' %}bg-secondary
+                        {% elif report.status == 'VERIFIED' %}bg-primary
+                        {% elif report.status == 'IN_PROGRESS' %}bg-warning text-dark
+                        {% elif report.status == 'RESOLVED' %}bg-success
+                        {% endif %}
+                    ">
+                        {{ report.status }}
+                    </span>
+
+                </div>
+                {% empty %}
+                    <p class="text-muted">Belum ada laporan</p>
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔥 SELESAI -->
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body">
+
+                <h5 class="mb-3">✅ Laporan Selesai</h5>
+
+                {% for report in latest_resolved %}
+                <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded hover-item">
+
+                    <div>
+                        <strong>{{ report.title }}</strong><br>
+                        <small class="text-muted">{{ report.category }}</small>
+                    </div>
+
+                    <span class="badge bg-success">
+                        {{ report.status }}
+                    </span>
+
+                </div>
+                {% empty %}
+                    <p class="text-muted">Belum ada laporan selesai</p>
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- 🔥 CHART JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+fetch('/dashboard/data/')
+.then(response => response.json())
+.then(data => {
+
+    // STATUS CHART
+    const statusLabels = data.status.map(item => item.status);
+    const statusValues = data.status.map(item => item.total);
+
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusValues
+            }]
+        },
+        options: {
+            maintainAspectRatio: false
+        }
+    });
+
+    // CATEGORY CHART
+    const categoryLabels = data.category.map(item => item.category);
+    const categoryValues = data.category.map(item => item.total);
+
+    new Chart(document.getElementById('categoryChart'), {
+        type: 'bar',
+        data: {
+            labels: categoryLabels,
+            datasets: [{
+                data: categoryValues
+            }]
+        },
+        options: {
+            maintainAspectRatio: false
+        }
+    });
+
+});
+</script>
+
+{% endblock %}

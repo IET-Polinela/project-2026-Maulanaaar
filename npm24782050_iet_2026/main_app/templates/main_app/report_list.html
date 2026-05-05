@@ -2,101 +2,123 @@
 
 {% block content %}
 
-<h2 class="mb-3">📋 Daftar Laporan</h2>
+<!-- 🔥 HEADER + SEARCH -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="fw-bold">📋 Daftar Laporan</h2>
+        <small class="text-muted">Kelola laporan masyarakat dengan mudah</small>
+    </div>
 
+    <input type="text" id="searchInput"
+           class="form-control w-25"
+           placeholder="🔍 Cari laporan...">
+</div>
+
+<!-- 🔥 BUTTON TAMBAH -->
 {% if user.is_authenticated and user.is_admin %}
-<a href="{% url 'add_report' %}" class="btn btn-success mb-3">
+<a href="{% url 'add_report' %}" class="btn btn-success mb-3 shadow-sm">
     ➕ Tambah Laporan
 </a>
 {% endif %}
 
+<!-- 🔥 TABLE -->
+<div class="card shadow-sm border-0">
+<div class="card-body p-0">
+
 <div class="table-responsive">
-<table class="table table-bordered table-striped align-middle">
+<table class="table table-hover align-middle mb-0">
+
     <thead class="table-dark">
         <tr>
             <th>Judul</th>
             <th>Lokasi</th>
             <th>Status</th>
-            <th>Aksi</th>
+            <th style="width: 220px;">Aksi</th>
         </tr>
     </thead>
 
-    <tbody>
+    <tbody id="reportTable">
+
         {% for report in reports %}
         <tr>
+
             <td>{{ report.title }}</td>
             <td>{{ report.location }}</td>
 
             <td>
                 {% if report.status == 'REPORTED' %}
-                    <span class="badge bg-secondary">Reported</span>
+                    <span class="badge rounded-pill bg-secondary">Reported</span>
                 {% elif report.status == 'VERIFIED' %}
-                    <span class="badge bg-primary">Verified</span>
+                    <span class="badge rounded-pill bg-primary">Verified</span>
                 {% elif report.status == 'IN_PROGRESS' %}
-                    <span class="badge bg-warning text-dark">In Progress</span>
+                    <span class="badge rounded-pill bg-warning text-dark">In Progress</span>
                 {% elif report.status == 'RESOLVED' %}
-                    <span class="badge bg-success">Resolved</span>
+                    <span class="badge rounded-pill bg-success">Resolved</span>
                 {% endif %}
             </td>
 
             <td>
 
-                <a href="{% url 'report_detail' report.pk %}" class="btn btn-sm btn-info">
-                    Detail
-                </a>
+                <!-- 🔥 AKSI -->
+                <div class="d-flex flex-wrap gap-1">
 
+                    <!-- 🔍 DETAIL MODAL -->
+                    <button class="btn btn-sm btn-info btn-detail"
+                            data-id="{{ report.id }}">
+                        🔍
+                    </button>
+
+                    {% if user.is_authenticated and user.is_admin %}
+
+                    <a href="{% url 'edit_report' report.pk %}"
+                       class="btn btn-sm btn-primary">
+                        ✏️
+                    </a>
+
+                    <button class="btn btn-sm btn-danger"
+                            data-bs-toggle="modal"
+                            data-bs-target="#deleteModal{{ report.id }}">
+                        🗑️
+                    </button>
+
+                    {% endif %}
+                </div>
+
+                <!-- 🔥 STATUS BUTTON -->
                 {% if user.is_authenticated and user.is_admin %}
+                <div class="mt-1">
 
-                <a href="{% url 'edit_report' report.pk %}" class="btn btn-sm btn-primary">
-                    Edit
-                </a>
+                    {% if report.status == 'REPORTED' %}
+                    <form method="POST" action="{% url 'update_status' report.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="VERIFIED">
+                        <button class="btn btn-warning btn-sm w-100">Verify</button>
+                    </form>
+                    {% endif %}
 
-                <!-- 🔥 DELETE BUTTON -->
-                <button class="btn btn-sm btn-danger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteModal{{ report.id }}">
-                    Delete
-                </button>
+                    {% if report.status == 'VERIFIED' %}
+                    <form method="POST" action="{% url 'update_status' report.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="IN_PROGRESS">
+                        <button class="btn btn-warning btn-sm w-100">Start</button>
+                    </form>
+                    {% endif %}
 
-                <br><br>
+                    {% if report.status == 'IN_PROGRESS' %}
+                    <form method="POST" action="{% url 'update_status' report.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="status" value="RESOLVED">
+                        <button class="btn btn-success btn-sm w-100">Resolve</button>
+                    </form>
+                    {% endif %}
 
-                <!-- 🔥 STATUS FLOW -->
-                {% if report.status == 'REPORTED' %}
-                <form method="POST" action="{% url 'update_status' report.id %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="status" value="VERIFIED">
-                    <button class="btn btn-warning btn-sm">
-                        Verify
-                    </button>
-                </form>
-                {% endif %}
-
-                {% if report.status == 'VERIFIED' %}
-                <form method="POST" action="{% url 'update_status' report.id %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="status" value="IN_PROGRESS">
-                    <button class="btn btn-warning btn-sm">
-                        Start
-                    </button>
-                </form>
-                {% endif %}
-
-                {% if report.status == 'IN_PROGRESS' %}
-                <form method="POST" action="{% url 'update_status' report.id %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="status" value="RESOLVED">
-                    <button class="btn btn-success btn-sm">
-                        Resolve
-                    </button>
-                </form>
-                {% endif %}
-
+                </div>
                 {% endif %}
 
             </td>
         </tr>
 
-        <!-- 🔥 MODAL DELETE -->
+        <!-- 🔥 DELETE MODAL -->
         <div class="modal fade" id="deleteModal{{ report.id }}" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content text-center">
@@ -105,15 +127,12 @@
 
                         <h4 class="text-danger mb-2">❌ Hapus Laporan</h4>
 
-                        <p class="text-muted">
-                            Apakah Anda yakin ingin menghapus laporan ini?
-                        </p>
+                        <p class="text-muted">Apakah Anda yakin?</p>
 
                         <strong>{{ report.title }}</strong>
 
                         <form method="POST"
-                              action="{% url 'delete_report' report.pk %}"
-                              onsubmit="handleDelete(this)">
+                              action="{% url 'delete_report' report.pk %}">
 
                             {% csrf_token %}
 
@@ -125,8 +144,7 @@
                                 </button>
 
                                 <button type="submit" class="btn btn-danger">
-                                    <span class="text-btn">Delete</span>
-                                    <span class="spinner-border spinner-border-sm d-none"></span>
+                                    Delete
                                 </button>
                             </div>
 
@@ -138,30 +156,152 @@
             </div>
         </div>
 
+        {% empty %}
+        <tr>
+            <td colspan="4" class="text-center text-muted p-4">
+                Belum ada laporan 😢
+            </td>
+        </tr>
         {% endfor %}
+
     </tbody>
 </table>
 </div>
 
-<!-- 🔥 SCRIPT DELETE LOADING -->
+</div>
+</div>
+
+<!-- 🔥 MODAL DETAIL -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content border-0 shadow">
+
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">📄 Detail Laporan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <p><strong>Judul:</strong><br>
+        <span id="modalTitle"></span></p>
+
+        <p><strong>Kategori:</strong>
+        <span id="modalCategory" class="badge bg-secondary"></span></p>
+
+        <p><strong>Deskripsi:</strong><br>
+        <span id="modalDesc"></span></p>
+
+        <p><strong>Lokasi:</strong><br>
+        <span id="modalLocation"></span></p>
+
+        <p><strong>Status:</strong>
+        <span id="modalStatus" class="badge"></span></p>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 🔥 LIVE SEARCH + CONSOLE -->
 <script>
-function handleDelete(form) {
+document.addEventListener("DOMContentLoaded", function() {
 
-    const btn = form.querySelector('button[type="submit"]');
-    const text = btn.querySelector('.text-btn');
-    const spinner = btn.querySelector('.spinner-border');
+    const input = document.getElementById("searchInput");
+    const table = document.getElementById("reportTable");
 
-    btn.disabled = true;
-    text.innerText = "Menghapus...";
-    spinner.classList.remove('d-none');
+    let timeout = null;
 
-    // delay 3 detik
-    setTimeout(() => {
-        form.submit();
-    }, 3000);
+    input.addEventListener("keyup", function() {
 
-    return false; // tahan submit dulu
-}
+        clearTimeout(timeout);
+
+        timeout = setTimeout(() => {
+
+            let keyword = input.value;
+
+            fetch(`/api/search/?q=${keyword}`)
+            .then(res => res.json())
+            .then(data => {
+
+                console.log("Live Search JSON:", data);
+
+                table.innerHTML = "";
+
+                data.reports.forEach(report => {
+
+                    let statusBadge = "";
+
+                    if (report.status === "REPORTED")
+                        statusBadge = '<span class="badge rounded-pill bg-secondary">Reported</span>';
+                    else if (report.status === "VERIFIED")
+                        statusBadge = '<span class="badge rounded-pill bg-primary">Verified</span>';
+                    else if (report.status === "IN_PROGRESS")
+                        statusBadge = '<span class="badge rounded-pill bg-warning text-dark">In Progress</span>';
+                    else if (report.status === "RESOLVED")
+                        statusBadge = '<span class="badge rounded-pill bg-success">Resolved</span>';
+
+                    table.innerHTML += `
+                        <tr>
+                            <td>${report.title}</td>
+                            <td>${report.location}</td>
+                            <td>${statusBadge}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info btn-detail" data-id="${report.id}">🔍</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+            });
+
+        }, 400);
+
+    });
+
+});
+</script>
+
+<!-- 🔥 MODAL FETCH -->
+<script>
+document.addEventListener('click', function(e) {
+
+    if (e.target.classList.contains('btn-detail')) {
+
+        const id = e.target.getAttribute('data-id');
+
+        fetch(`/api/report/${id}/`)
+        .then(res => res.json())
+        .then(data => {
+
+            console.log("Detail JSON:", data); // 🔥 tambahan buat bukti JSON
+
+            document.getElementById('modalTitle').innerText = data.title;
+            document.getElementById('modalCategory').innerText = data.category;
+            document.getElementById('modalDesc').innerText = data.description;
+            document.getElementById('modalLocation').innerText = data.location;
+
+            let statusEl = document.getElementById('modalStatus');
+            statusEl.innerText = data.status;
+            statusEl.className = 'badge';
+
+            if (data.status === 'REPORTED') {
+                statusEl.classList.add('bg-secondary');
+            } else if (data.status === 'VERIFIED') {
+                statusEl.classList.add('bg-primary');
+            } else if (data.status === 'IN_PROGRESS') {
+                statusEl.classList.add('bg-warning', 'text-dark');
+            } else if (data.status === 'RESOLVED') {
+                statusEl.classList.add('bg-success');
+            }
+
+            let modal = new bootstrap.Modal(document.getElementById('detailModal'));
+            modal.show();
+        });
+    }
+
+});
 </script>
 
 {% endblock %}
