@@ -25,6 +25,9 @@ INSTALLED_APPS = [
     # 🔥 USER MANAGEMENT
     'usermanagement_24782050',
     'dashboard_24782050',
+
+    # 🔥 DJANGO REST FRAMEWORK (LAB 9)
+    'rest_framework',
 ]
 
 
@@ -44,12 +47,12 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'npm24782050_iet_2026.urls'
 
 
-# 🔥 TEMPLATE SETTINGS (PENTING BANGET)
+# 🔥 TEMPLATE SETTINGS
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
 
-        # 🔥 GLOBAL TEMPLATE (WAJIB ADA FOLDER templates/)
+        # 🔥 GLOBAL TEMPLATE
         'DIRS': [BASE_DIR / 'templates'],
 
         'APP_DIRS': True,
@@ -99,5 +102,5 @@ STATICFILES_DIRS = [
 ]
 
 
-# 🔥 DEFAULT AUTO FIELD (BIAR WARNING HILANG)
+# 🔥 DEFAULT AUTO FIELD
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

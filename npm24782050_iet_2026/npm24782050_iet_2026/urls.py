@@ -23,14 +23,19 @@ urlpatterns = [
     # 🔥 USER MANAGEMENT
     path('user/', include('usermanagement_24782050.urls')),
 
+    # 🔥 DASHBOARD
+    path('dashboard/', include('dashboard_24782050.urls')),
+
+    # 🔥 REST API (LAB 9)
+    path('api/', include('main_app.api_urls')),
+
     # 🔥 LOGIN
     path('login/', CustomLoginView.as_view(), name='login'),
 
     # 🔥 LOGOUT
-    path('logout/', auth_views.LogoutView.as_view(
-        next_page='home'
-    ), name='logout'),
-
-    # 🔥 INI YANG KAMU KURANG
-    path('dashboard/', include('dashboard_24782050.urls')),
+    path(
+        'logout/',
+        auth_views.LogoutView.as_view(next_page='home'),
+        name='logout'
+    ),
 ]
