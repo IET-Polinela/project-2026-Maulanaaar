@@ -26,7 +26,7 @@ INSTALLED_APPS = [
     'usermanagement_24782050',
     'dashboard_24782050',
 
-    # 🔥 DJANGO REST FRAMEWORK (LAB 9)
+    # 🔥 DJANGO REST FRAMEWORK
     'rest_framework',
 ]
 
@@ -104,3 +104,15 @@ STATICFILES_DIRS = [
 
 # 🔥 DEFAULT AUTO FIELD
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# 🔥 DJANGO REST FRAMEWORK + JWT AUTHENTICATION (LAB 10)
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+}

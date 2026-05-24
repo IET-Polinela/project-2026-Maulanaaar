@@ -11,20 +11,20 @@ class Report(models.Model):
         ('RESOLVED', 'Resolved'),
     ]
 
-    # 🔥 Informasi Laporan
+    # Informasi laporan
     title = models.CharField(max_length=200)
     category = models.CharField(max_length=100)
     description = models.TextField()
     location = models.CharField(max_length=200)
 
-    # 🔥 Status Laporan
+    # Status laporan
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
         default='DRAFT'
     )
 
-    # 🔥 User yang membuat laporan
+    # User yang membuat laporan
     reporter = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -33,7 +33,7 @@ class Report(models.Model):
         blank=True
     )
 
-    # 🔥 Timestamp
+    # Timestamp laporan
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
