@@ -28,11 +28,17 @@ INSTALLED_APPS = [
 
     # 🔥 DJANGO REST FRAMEWORK
     'rest_framework',
+
+    # 🔥 CORS HEADERS (LAB 11)
+    'corsheaders',
 ]
 
 
 # 🔥 MIDDLEWARE
 MIDDLEWARE = [
+    # 🔥 CORS MIDDLEWARE HARUS DI ATAS
+    'corsheaders.middleware.CorsMiddleware',
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -116,3 +122,8 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
+
+
+# 🔥 CORS SETTINGS (LAB 11)
+# Mengizinkan frontend SPA di port 5500 mengakses backend Django di port 8000
+CORS_ALLOW_ALL_ORIGINS = True
