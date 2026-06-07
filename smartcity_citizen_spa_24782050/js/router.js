@@ -10,13 +10,6 @@ function renderNavbar() {
 
         navMenu.innerHTML = `
             <li class="nav-item">
-                <a class="nav-link" href="#login">
-                    <i class="bi bi-box-arrow-in-right me-1"></i>
-                    Login
-                </a>
-            </li>
-
-            <li class="nav-item">
                 <a class="nav-link" href="#dashboard">
                     <i class="bi bi-speedometer2 me-1"></i>
                     Dashboard
@@ -43,13 +36,6 @@ function renderNavbar() {
                 <a class="nav-link" href="#login">
                     <i class="bi bi-box-arrow-in-right me-1"></i>
                     Login
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="#dashboard">
-                    <i class="bi bi-speedometer2 me-1"></i>
-                    Dashboard
                 </a>
             </li>
         `;
@@ -135,10 +121,7 @@ function renderLoginPage() {
 }
 
 /**
- * Halaman Dashboard Citizen.
- * Layout responsive:
- * - Desktop: kiri 25%, tengah 50%, kanan 25%
- * - Mobile: semua kolom menjadi 100% dan menumpuk ke bawah
+ * Halaman Dashboard Citizen untuk Lab Session 12.
  */
 function renderDashboardPage() {
     if (!isLoggedIn()) {
@@ -150,107 +133,138 @@ function renderDashboardPage() {
 
     appContent.innerHTML = `
         <section class="page-section">
-            <div class="container py-4">
-                <div class="mb-4">
-                    <h1 class="fw-bold mb-2">Dashboard Citizen</h1>
-                    <p class="text-muted mb-0">
-                        Portal ini digunakan oleh warga untuk mengakses layanan Smart City berbasis API.
-                    </p>
-                </div>
-
-                <div class="alert alert-primary d-flex align-items-center mb-4" role="alert">
-                    <i class="bi bi-person-check-fill me-2"></i>
-                    <div>
-                        Login sebagai: <strong>${username}</strong>
-                    </div>
-                </div>
-
+            <div class="container-fluid py-4">
                 <div class="row g-4">
-                    <!-- Kolom kiri: 25% desktop, 100% mobile -->
+                    <!-- SIDEBAR KIRI -->
                     <div class="col-12 col-lg-3">
-                        <div class="card content-card h-100 shadow-sm">
+                        <div class="card sidebar-card mb-4">
                             <div class="card-body">
-                                <h4 class="fw-bold mb-3">
-                                    <i class="bi bi-person-badge-fill text-primary me-2"></i>
-                                    Profil Citizen
-                                </h4>
-
-                                <p class="text-muted mb-2">
-                                    Username:
-                                </p>
-
-                                <h5 class="fw-bold mb-3">
-                                    <i class="bi bi-person-circle me-1 text-primary"></i>
-                                    ${username}
+                                <h5 class="fw-bold mb-1">
+                                    <i class="bi bi-person-circle text-primary me-2"></i>
+                                    Citizen Portal
                                 </h5>
 
-                                <p class="text-muted mb-3">
-                                    Status login berhasil menggunakan JWT.
+                                <p class="text-muted small mb-3">
+                                    Login sebagai <strong>${username}</strong>
                                 </p>
 
-                                <span class="badge bg-success">
-                                    Authenticated
-                                </span>
+                                <div class="alert alert-success py-2 mb-0">
+                                    <small>
+                                        <i class="bi bi-shield-check me-1"></i>
+                                        JWT Authenticated
+                                    </small>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Kolom tengah: 50% desktop, 100% mobile -->
-                    <div class="col-12 col-lg-6">
-                        <div class="card content-card h-100 shadow-sm">
+                        <div class="card sidebar-card">
                             <div class="card-body">
-                                <h4 class="fw-bold mb-3">
-                                    <i class="bi bi-clipboard-data-fill text-primary me-2"></i>
-                                    Ringkasan Laporan
-                                </h4>
+                                <h5 class="fw-bold mb-3">
+                                    <i class="bi bi-bar-chart-fill text-primary me-2"></i>
+                                    Rekap Status
+                                </h5>
 
-                                <p class="text-muted">
-                                    Data laporan nantinya dapat diambil dari endpoint API Django.
-                                </p>
+                                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                    <span>
+                                        <i class="bi bi-file-earmark-text text-secondary me-1"></i>
+                                        Draft
+                                    </span>
+                                    <span class="badge bg-secondary" id="summaryDraft">0</span>
+                                </div>
 
-                                <div class="row g-3 mt-2">
-                                    <div class="col-12 col-md-4">
-                                        <div class="border rounded p-3 text-center bg-light">
-                                            <h3 class="fw-bold mb-1">API</h3>
-                                            <p class="text-muted mb-0">Backend DRF</p>
-                                        </div>
-                                    </div>
+                                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                    <span>
+                                        <i class="bi bi-send-check text-primary me-1"></i>
+                                        Dilaporkan
+                                    </span>
+                                    <span class="badge bg-primary" id="summaryReported">0</span>
+                                </div>
 
-                                    <div class="col-12 col-md-4">
-                                        <div class="border rounded p-3 text-center bg-light">
-                                            <h3 class="fw-bold mb-1">JWT</h3>
-                                            <p class="text-muted mb-0">Authentication</p>
-                                        </div>
-                                    </div>
+                                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                    <span>
+                                        <i class="bi bi-patch-check text-info me-1"></i>
+                                        Terverifikasi
+                                    </span>
+                                    <span class="badge bg-info text-dark" id="summaryVerified">0</span>
+                                </div>
 
-                                    <div class="col-12 col-md-4">
-                                        <div class="border rounded p-3 text-center bg-light">
-                                            <h3 class="fw-bold mb-1">SPA</h3>
-                                            <p class="text-muted mb-0">Frontend</p>
-                                        </div>
-                                    </div>
+                                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                    <span>
+                                        <i class="bi bi-hourglass-split text-warning me-1"></i>
+                                        Diproses
+                                    </span>
+                                    <span class="badge bg-warning text-dark" id="summaryInProgress">0</span>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center pt-2">
+                                    <span>
+                                        <i class="bi bi-check-circle text-success me-1"></i>
+                                        Selesai
+                                    </span>
+                                    <span class="badge bg-success" id="summaryResolved">0</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Kolom kanan: 25% desktop, 100% mobile -->
-                    <div class="col-12 col-lg-3">
-                        <div class="card content-card h-100 shadow-sm">
-                            <div class="card-body">
-                                <h4 class="fw-bold mb-3">
-                                    <i class="bi bi-shield-lock-fill text-primary me-2"></i>
-                                    Token Login
-                                </h4>
+                    <!-- KONTEN UTAMA -->
+                    <div class="col-12 col-lg-9">
+                        <div class="hero-card p-4 mb-4 shadow-sm">
+                            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                                <div>
+                                    <h2 class="fw-bold mb-2">
+                                        <i class="bi bi-buildings-fill me-2"></i>
+                                        Dashboard Laporan Citizen
+                                    </h2>
+                                    <p class="mb-0">
+                                        Kelola laporan pribadi dan pantau Feed Kota secara real-time melalui Fetch API.
+                                    </p>
+                                </div>
 
-                                <p class="text-muted mb-3">
-                                    Access token dan refresh token tersimpan di localStorage setelah login berhasil.
-                                </p>
-
-                                <button class="btn btn-outline-primary btn-sm" onclick="logout()">
-                                    <i class="bi bi-arrow-left-right me-1"></i>
-                                    Ganti Akun
+                                <button type="button" class="btn btn-light fw-semibold" id="btnOpenCreateReport">
+                                    <i class="bi bi-plus-circle me-1"></i>
+                                    Tambah Laporan Baru
                                 </button>
+                            </div>
+                        </div>
+
+                        <div class="card content-card">
+                            <div class="card-body">
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+                                    <div>
+                                        <h4 class="fw-bold mb-1">
+                                            <i class="bi bi-list-task text-primary me-2"></i>
+                                            Daftar Laporan
+                                        </h4>
+                                        <p class="text-muted mb-0">
+                                            Data diambil langsung dari API Django REST Framework.
+                                        </p>
+                                    </div>
+
+                                    <div class="btn-group" role="group" aria-label="Tab Laporan">
+                                        <button type="button" class="btn btn-primary" id="btnMyReports">
+                                            <i class="bi bi-person-lines-fill me-1"></i>
+                                            Laporan Saya
+                                        </button>
+
+                                        <button type="button" class="btn btn-outline-primary" id="btnFeed">
+                                            <i class="bi bi-globe2 me-1"></i>
+                                            Feed Kota
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="listMessage"></div>
+
+                                <div id="reportListContainer" class="row g-3">
+                                    <div class="col-12">
+                                        <div class="alert alert-info mb-0">
+                                            Memuat data laporan...
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="paginationContainer" class="mt-4 d-flex justify-content-center"></div>
                             </div>
                         </div>
                     </div>
@@ -258,13 +272,14 @@ function renderDashboardPage() {
             </div>
         </section>
     `;
+
+    if (typeof initializeDashboard === "function") {
+        initializeDashboard();
+    }
 }
 
 /**
  * Router utama SPA.
- * Menggunakan hash-based routing:
- * #login
- * #dashboard
  */
 function handleRoute() {
     renderNavbar();

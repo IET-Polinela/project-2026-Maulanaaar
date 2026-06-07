@@ -70,9 +70,11 @@ function setupLoginForm() {
                 window.location.hash = "#dashboard";
             }, 600);
         } else {
+            const errorMessage = result.data?.detail || "Login gagal. Periksa username dan password.";
+
             loginMessage.innerHTML = `
                 <div class="alert alert-danger">
-                    Login gagal. Periksa username dan password.
+                    ${errorMessage}
                 </div>
             `;
         }
@@ -88,4 +90,8 @@ function logout() {
     localStorage.removeItem("username");
 
     window.location.hash = "#login";
+
+    if (typeof handleRoute === "function") {
+        handleRoute();
+    }
 }
