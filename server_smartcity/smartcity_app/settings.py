@@ -2,13 +2,13 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# 🔥 SECURITY
+# SECURITY
 SECRET_KEY = 'django-secret-key'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
-# 🔥 INSTALLED APPS
+# INSTALLED APPS
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -17,26 +17,26 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # 🔥 APP KAMU
+    # APP KAMU
     'main_app',
     'about',
     'contacts',
 
-    # 🔥 USER MANAGEMENT
+    # USER MANAGEMENT
     'usermanagement_24782050',
     'dashboard_24782050',
 
-    # 🔥 DJANGO REST FRAMEWORK
+    # DJANGO REST FRAMEWORK
     'rest_framework',
 
-    # 🔥 CORS HEADERS (LAB 11)
+    # CORS HEADERS
     'corsheaders',
 ]
 
 
-# 🔥 MIDDLEWARE
+# MIDDLEWARE
 MIDDLEWARE = [
-    # 🔥 CORS MIDDLEWARE HARUS DI ATAS
+    # CORS MIDDLEWARE HARUS DI ATAS COMMON MIDDLEWARE
     'corsheaders.middleware.CorsMiddleware',
 
     'django.middleware.security.SecurityMiddleware',
@@ -49,16 +49,16 @@ MIDDLEWARE = [
 ]
 
 
-# 🔥 ROOT URL
-ROOT_URLCONF = 'npm24782050_iet_2026.urls'
+# ROOT URL
+ROOT_URLCONF = 'smartcity_app.urls'
 
 
-# 🔥 TEMPLATE SETTINGS
+# TEMPLATE SETTINGS
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
 
-        # 🔥 GLOBAL TEMPLATE
+        # GLOBAL TEMPLATE
         'DIRS': [BASE_DIR / 'templates'],
 
         'APP_DIRS': True,
@@ -74,11 +74,11 @@ TEMPLATES = [
 ]
 
 
-# 🔥 WSGI
-WSGI_APPLICATION = 'npm24782050_iet_2026.wsgi.application'
+# WSGI
+WSGI_APPLICATION = 'smartcity_app.wsgi.application'
 
 
-# 🔥 DATABASE (POSTGRESQL)
+# DATABASE (POSTGRESQL)
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -91,28 +91,30 @@ DATABASES = {
 }
 
 
-# 🔥 CUSTOM USER MODEL
+# CUSTOM USER MODEL
 AUTH_USER_MODEL = 'usermanagement_24782050.CustomUser'
 
 
-# 🔥 AUTH REDIRECT
+# AUTH REDIRECT
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 
 
-# 🔥 STATIC FILES
+# STATIC FILES
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# 🔥 DEFAULT AUTO FIELD
+
+# DEFAULT AUTO FIELD
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# 🔥 DJANGO REST FRAMEWORK + JWT AUTHENTICATION (LAB 10)
+# DJANGO REST FRAMEWORK + JWT AUTHENTICATION
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
@@ -124,6 +126,6 @@ REST_FRAMEWORK = {
 }
 
 
-# 🔥 CORS SETTINGS (LAB 11)
-# Mengizinkan frontend SPA di port 5500 mengakses backend Django di port 8000
+# CORS SETTINGS
+# Mengizinkan frontend SPA dari domain berbeda seperti GitHub Pages mengakses backend Django
 CORS_ALLOW_ALL_ORIGINS = True
