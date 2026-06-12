@@ -1,9 +1,16 @@
-const BASE_URL = "http://103.151.63.86:8004";
+const API_BASE_URL = "http://103.151.63.86:8004/api";
 
 /**
  * Fungsi pembungkus Fetch API.
  * Digunakan untuk semua komunikasi frontend SPA ke backend Django DRF.
  * Token JWT otomatis diambil dari localStorage dan dikirim sebagai Bearer Token.
+ *
+ * Catatan:
+ * - API_BASE_URL sudah berisi /api
+ * - Jadi endpoint cukup ditulis seperti "/token/" atau "/reports/"
+ * - Contoh hasil akhir:
+ *   http://103.151.63.86:8004/api/token/
+ *   http://103.151.63.86:8004/api/reports/
  */
 async function requestAPI(endpoint, method = "GET", bodyData = null) {
     const accessToken = localStorage.getItem("access_token");
