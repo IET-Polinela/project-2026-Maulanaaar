@@ -14,32 +14,40 @@ from .forms import ReportForm
 
 
 # =========================================
-# 🔥 HOME
+# HOME
 # =========================================
 class HomeView(TemplateView):
     template_name = 'main_app/home.html'
 
 
 # =========================================
-# 🔥 LIST REPORT
+# LIST REPORT
+# DRAFT disembunyikan dari halaman laporan backend/admin web
 # =========================================
 class ReportListView(ListView):
     model = Report
     template_name = 'main_app/report_list.html'
     context_object_name = 'reports'
 
+    def get_queryset(self):
+        return Report.objects.exclude(status='DRAFT').order_by('-created_at')
+
 
 # =========================================
-# 🔥 DETAIL (OPTIONAL - bisa dihapus kalau pakai modal)
+# DETAIL REPORT
+# DRAFT tidak bisa dibuka dari halaman detail backend/admin web
 # =========================================
 class ReportDetailView(DetailView):
     model = Report
     template_name = 'main_app/report_detail.html'
     context_object_name = 'report'
 
+    def get_queryset(self):
+        return Report.objects.exclude(status='DRAFT')
+
 
 # =========================================
-# 🔥 ADMIN CHECK
+# ADMIN CHECK
 # =========================================
 class AdminRequiredMixin(UserPassesTestMixin):
     def test_func(self):
@@ -51,7 +59,7 @@ class AdminRequiredMixin(UserPassesTestMixin):
 
 
 # =========================================
-# 🔥 CREATE
+# CREATE
 # =========================================
 class ReportCreateView(AdminRequiredMixin, CreateView):
     model = Report
@@ -65,7 +73,8 @@ class ReportCreateView(AdminRequiredMixin, CreateView):
 
 
 # =========================================
-# 🔥 UPDATE
+# UPDATE
+# DRAFT tidak bisa diedit oleh admin/backend web
 # =========================================
 class ReportUpdateView(AdminRequiredMixin, UpdateView):
     model = Report
@@ -73,17 +82,24 @@ class ReportUpdateView(AdminRequiredMixin, UpdateView):
     template_name = 'main_app/edit_report.html'
     success_url = reverse_lazy('report_list')
 
+    def get_queryset(self):
+        return Report.objects.exclude(status='DRAFT')
+
     def form_valid(self, form):
         messages.success(self.request, "✏️ Laporan berhasil diperbarui!")
         return super().form_valid(form)
 
 
 # =========================================
-# 🔥 DELETE
+# DELETE
+# DRAFT tidak bisa dihapus dari admin/backend web
 # =========================================
 class ReportDeleteView(AdminRequiredMixin, DeleteView):
     model = Report
     success_url = reverse_lazy('report_list')
+
+    def get_queryset(self):
+        return Report.objects.exclude(status='DRAFT')
 
     def post(self, request, *args, **kwargs):
         messages.success(self.request, "🗑️ Laporan berhasil dihapus!")
@@ -91,17 +107,20 @@ class ReportDeleteView(AdminRequiredMixin, DeleteView):
 
 
 # =========================================
-# 🔥 UPDATE STATUS
+# UPDATE STATUS
+# DRAFT tidak bisa diambil/diproses admin/backend web
 # =========================================
 class ReportUpdateStatusView(View):
     def post(self, request, pk):
 
-        # 🔐 CEK ADMIN
         if not request.user.is_authenticated or not getattr(request.user, 'is_admin', False):
             messages.error(request, "❌ Akses ditolak!")
             return redirect('report_list')
 
-        report = get_object_or_404(Report, pk=pk)
+        report = get_object_or_404(
+            Report.objects.exclude(status='DRAFT'),
+            pk=pk
+        )
 
         new_status = request.POST.get('status')
 
@@ -119,10 +138,14 @@ class ReportUpdateStatusView(View):
 
 
 # =========================================
-# 🔥 API DETAIL (UNTUK MODAL)
+# API DETAIL UNTUK MODAL
+# DRAFT tidak dikembalikan
 # =========================================
 def report_detail_api(request, pk):
-    report = get_object_or_404(Report, pk=pk)
+    report = get_object_or_404(
+        Report.objects.exclude(status='DRAFT'),
+        pk=pk
+    )
 
     data = {
         'title': report.title,
@@ -136,16 +159,17 @@ def report_detail_api(request, pk):
 
 
 # =========================================
-# 🔥 LIVE SEARCH API
+# LIVE SEARCH API
+# DRAFT disembunyikan dari hasil pencarian
 # =========================================
 def report_search_api(request):
     query = request.GET.get('q', '')
 
-    reports = Report.objects.filter(
+    reports = Report.objects.exclude(status='DRAFT').filter(
         Q(title__icontains=query) |
         Q(location__icontains=query) |
         Q(category__icontains=query)
-    )
+    ).order_by('-created_at')
 
     data = {
         "reports": [
