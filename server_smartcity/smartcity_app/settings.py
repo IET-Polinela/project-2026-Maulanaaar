@@ -10,6 +10,7 @@ ALLOWED_HOSTS = ['*']
 
 # INSTALLED APPS
 INSTALLED_APPS = [
+    # DJANGO DEFAULT APPS
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -17,20 +18,18 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # THIRD PARTY APPS
+    'rest_framework',
+    'corsheaders',
+    'drf_spectacular',
+    'django_scalar',
+
     # APP KAMU
     'main_app',
     'about',
     'contacts',
-
-    # USER MANAGEMENT
     'usermanagement_24782050',
     'dashboard_24782050',
-
-    # DJANGO REST FRAMEWORK
-    'rest_framework',
-
-    # CORS HEADERS
-    'corsheaders',
 ]
 
 
@@ -78,7 +77,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'smartcity_app.wsgi.application'
 
 
-# DATABASE (POSTGRESQL)
+# DATABASE POSTGRESQL
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -114,15 +113,27 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# DJANGO REST FRAMEWORK + JWT AUTHENTICATION
+# DJANGO REST FRAMEWORK + JWT AUTHENTICATION + OPENAPI SCHEMA
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
+
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+}
+
+
+# OPENAPI DOCUMENTATION SETTINGS
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Smart City Portal API',
+    'DESCRIPTION': 'Dokumentasi REST API resmi untuk Portal Pelaporan Laporan Warga',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }
 
 

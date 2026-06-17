@@ -2,7 +2,11 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.contrib import messages
+
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from django_scalar.views import scalar_viewer
 
 
 # CUSTOM LOGIN VIEW
@@ -36,6 +40,19 @@ urlpatterns = [
     # JWT TOKEN LOGIN & REFRESH
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    # OPENAPI SCHEMA
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+
+    # SWAGGER UI DOCUMENTATION
+    path(
+        'api/docs/swagger/',
+        SpectacularSwaggerView.as_view(url_name='schema'),
+        name='swagger-ui'
+    ),
+
+    # SCALAR UI DOCUMENTATION
+    path('api/docs/scalar/', scalar_viewer, name='scalar-ui'),
 
     # LOGIN WEB DJANGO
     path('login/', CustomLoginView.as_view(), name='login'),

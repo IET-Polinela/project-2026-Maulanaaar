@@ -3,6 +3,8 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 
+from drf_spectacular.utils import extend_schema
+
 from .models import Report
 from .serializers import ReportSerializer
 from .permissions import IsOwnerAndDraftOnly
@@ -70,3 +72,10 @@ class ReportViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("Hanya Citizen yang dapat membuat laporan.")
 
         serializer.save(reporter=user, status="DRAFT")
+
+    # SKENARIO 1 LAB 14:
+    # Endpoint DELETE disembunyikan dari dokumentasi OpenAPI/Scalar,
+    # tetapi endpoint tetap harus diamankan dengan permission DRF.
+    @extend_schema(exclude=True)
+    def destroy(self, request, *args, **kwargs):
+        return super().destroy(request, *args, **kwargs)
