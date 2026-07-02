@@ -1,4 +1,8 @@
-const API_BASE_URL = "http://103.151.63.86:8004/api";
+const API_BASE_URL = (
+    window.SMARTCITY_API_BASE_URL ||
+    localStorage.getItem("SMARTCITY_API_BASE_URL") ||
+    "http://127.0.0.1:8000/api"
+).replace(/\/$/, "");
 
 /**
  * Fungsi pembungkus Fetch API.
@@ -6,11 +10,10 @@ const API_BASE_URL = "http://103.151.63.86:8004/api";
  * Token JWT otomatis diambil dari localStorage dan dikirim sebagai Bearer Token.
  *
  * Catatan:
- * - API_BASE_URL sudah berisi /api
+ * - API_BASE_URL sudah berisi /api dan bisa dioverride saat deploy
  * - Jadi endpoint cukup ditulis seperti "/token/" atau "/reports/"
- * - Contoh hasil akhir:
- *   http://103.151.63.86:8004/api/token/
- *   http://103.151.63.86:8004/api/reports/
+ * - Contoh override di index.html:
+ *   window.SMARTCITY_API_BASE_URL = "https://nama-backend.onrender.com/api";
  */
 async function requestAPI(endpoint, method = "GET", bodyData = null) {
     const accessToken = localStorage.getItem("access_token");

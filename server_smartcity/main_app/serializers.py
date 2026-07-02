@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
+
 from .models import Report
 
 
@@ -35,9 +37,11 @@ class ReportSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
 
+    @extend_schema_field(serializers.CharField)
     def get_reporter(self, obj):
         return "Warga Anonim"
 
+    @extend_schema_field(serializers.CharField)
     def get_reporter_name(self, obj):
         request = self.context.get("request")
 
@@ -49,6 +53,7 @@ class ReportSerializer(serializers.ModelSerializer):
 
         return "Warga Anonim"
 
+    @extend_schema_field(serializers.BooleanField)
     def get_is_owner(self, obj):
         request = self.context.get("request")
 
