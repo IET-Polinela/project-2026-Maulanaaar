@@ -4,7 +4,6 @@ from django.contrib.auth import views as auth_views
 from django.contrib import messages
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from django_scalar.views import scalar_viewer
 
@@ -19,20 +18,24 @@ class CustomLoginView(auth_views.LoginView):
 
 
 urlpatterns = [
-    # ADMIN
+    # ADMIN DJANGO
     path('admin/', admin.site.urls),
 
-    # MAIN APP
-    path('', include('main_app.urls')),
+    # LOGIN WEB DJANGO
+    path('login/', CustomLoginView.as_view(), name='login'),
+
+    # LOGOUT WEB DJANGO
+    path(
+        'logout/',
+        auth_views.LogoutView.as_view(next_page='home'),
+        name='logout'
+    ),
 
     # USER MANAGEMENT WEB
     path('user/', include('usermanagement_24782050.urls')),
 
-    # DASHBOARD
+    # DASHBOARD ADMIN
     path('dashboard/', include('dashboard_24782050.urls')),
-
-    # REST API REPORT
-    path('api/', include('main_app.api_urls')),
 
     # API REGISTER CITIZEN
     path('api/auth/', include('usermanagement_24782050.api_urls')),
@@ -54,13 +57,12 @@ urlpatterns = [
     # SCALAR UI DOCUMENTATION
     path('api/docs/scalar/', scalar_viewer, name='scalar-ui'),
 
-    # LOGIN WEB DJANGO
-    path('login/', CustomLoginView.as_view(), name='login'),
+    # REST API REPORT
+    # Ini harus berada sebelum MAIN APP agar /api/report/<id>/
+    # masuk ke ReportViewSet, bukan ke route lama di main_app.urls.
+    path('api/', include('main_app.api_urls')),
 
-    # LOGOUT WEB DJANGO
-    path(
-        'logout/',
-        auth_views.LogoutView.as_view(next_page='home'),
-        name='logout'
-    ),
+    # MAIN APP
+    # Harus diletakkan paling bawah supaya tidak menabrak route API.
+    path('', include('main_app.urls')),
 ]

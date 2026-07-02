@@ -21,10 +21,37 @@ class HomeView(TemplateView):
 
 
 # =========================================
+# ADMIN CHECK
+# =========================================
+class AdminRequiredMixin(UserPassesTestMixin):
+    """
+    Mixin untuk membatasi halaman backend/admin web.
+
+    User dianggap admin jika:
+    - sudah login, dan
+    - memiliki is_admin=True atau is_staff=True.
+    """
+
+    def test_func(self):
+        user = self.request.user
+        return (
+            user.is_authenticated
+            and (
+                getattr(user, 'is_admin', False)
+                or getattr(user, 'is_staff', False)
+            )
+        )
+
+    def handle_no_permission(self):
+        messages.error(self.request, "❌ Akses ditolak!")
+        return redirect('login')
+
+
+# =========================================
 # LIST REPORT
 # DRAFT disembunyikan dari halaman laporan backend/admin web
 # =========================================
-class ReportListView(ListView):
+class ReportListView(AdminRequiredMixin, ListView):
     model = Report
     template_name = 'main_app/report_list.html'
     context_object_name = 'reports'
@@ -37,7 +64,7 @@ class ReportListView(ListView):
 # DETAIL REPORT
 # DRAFT tidak bisa dibuka dari halaman detail backend/admin web
 # =========================================
-class ReportDetailView(DetailView):
+class ReportDetailView(AdminRequiredMixin, DetailView):
     model = Report
     template_name = 'main_app/report_detail.html'
     context_object_name = 'report'
@@ -47,19 +74,7 @@ class ReportDetailView(DetailView):
 
 
 # =========================================
-# ADMIN CHECK
-# =========================================
-class AdminRequiredMixin(UserPassesTestMixin):
-    def test_func(self):
-        return self.request.user.is_authenticated and getattr(self.request.user, 'is_admin', False)
-
-    def handle_no_permission(self):
-        messages.error(self.request, "❌ Akses ditolak!")
-        return redirect('report_list')
-
-
-# =========================================
-# CREATE
+# CREATE REPORT
 # =========================================
 class ReportCreateView(AdminRequiredMixin, CreateView):
     model = Report
@@ -73,7 +88,7 @@ class ReportCreateView(AdminRequiredMixin, CreateView):
 
 
 # =========================================
-# UPDATE
+# UPDATE REPORT
 # DRAFT tidak bisa diedit oleh admin/backend web
 # =========================================
 class ReportUpdateView(AdminRequiredMixin, UpdateView):
@@ -91,11 +106,12 @@ class ReportUpdateView(AdminRequiredMixin, UpdateView):
 
 
 # =========================================
-# DELETE
+# DELETE REPORT
 # DRAFT tidak bisa dihapus dari admin/backend web
 # =========================================
 class ReportDeleteView(AdminRequiredMixin, DeleteView):
     model = Report
+    template_name = 'main_app/delete_report.html'
     success_url = reverse_lazy('report_list')
 
     def get_queryset(self):
@@ -107,27 +123,51 @@ class ReportDeleteView(AdminRequiredMixin, DeleteView):
 
 
 # =========================================
-# UPDATE STATUS
+# UPDATE STATUS REPORT
 # DRAFT tidak bisa diambil/diproses admin/backend web
 # =========================================
 class ReportUpdateStatusView(View):
-    def post(self, request, pk):
+    """
+    View untuk mengubah status laporan dari portal admin.
 
-        if not request.user.is_authenticated or not getattr(request.user, 'is_admin', False):
+    Alur transisi:
+    REPORTED    -> VERIFIED
+    VERIFIED    -> IN_PROGRESS
+    IN_PROGRESS -> RESOLVED
+    RESOLVED    -> final/read-only
+    """
+
+    allowed_transitions = {
+        'REPORTED': ['VERIFIED'],
+        'VERIFIED': ['IN_PROGRESS'],
+        'IN_PROGRESS': ['RESOLVED'],
+        'RESOLVED': [],
+    }
+
+    def post(self, request, pk):
+        user = request.user
+
+        if not user.is_authenticated or not (
+            getattr(user, 'is_admin', False)
+            or getattr(user, 'is_staff', False)
+        ):
             messages.error(request, "❌ Akses ditolak!")
-            return redirect('report_list')
+            return redirect('login')
 
         report = get_object_or_404(
             Report.objects.exclude(status='DRAFT'),
             pk=pk
         )
 
-        new_status = request.POST.get('status')
+        # Supaya cocok dengan berbagai versi form/test:
+        # ada yang mengirim "status", ada juga yang mengirim "new_status".
+        new_status = request.POST.get('status') or request.POST.get('new_status')
 
-        allowed_status = ['REPORTED', 'VERIFIED', 'IN_PROGRESS', 'RESOLVED']
+        current_status = report.status
+        valid_next_statuses = self.allowed_transitions.get(current_status, [])
 
-        if new_status not in allowed_status:
-            messages.error(request, "❌ Status tidak valid!")
+        if new_status not in valid_next_statuses:
+            messages.error(request, "❌ Transisi status tidak valid!")
             return redirect('report_list')
 
         report.status = new_status
@@ -163,12 +203,20 @@ def report_detail_api(request, pk):
 # DRAFT disembunyikan dari hasil pencarian
 # =========================================
 def report_search_api(request):
+    user = request.user
+
+    if not user.is_authenticated or not (
+        getattr(user, 'is_admin', False)
+        or getattr(user, 'is_staff', False)
+    ):
+        return JsonResponse({'error': 'Akses ditolak'}, status=403)
+
     query = request.GET.get('q', '')
 
     reports = Report.objects.exclude(status='DRAFT').filter(
-        Q(title__icontains=query) |
-        Q(location__icontains=query) |
-        Q(category__icontains=query)
+        Q(title__icontains=query)
+        | Q(location__icontains=query)
+        | Q(category__icontains=query)
     ).order_by('-created_at')
 
     data = {
@@ -177,7 +225,7 @@ def report_search_api(request):
                 "id": r.id,
                 "title": r.title,
                 "location": r.location,
-                "status": r.status
+                "status": r.status,
             }
             for r in reports
         ]

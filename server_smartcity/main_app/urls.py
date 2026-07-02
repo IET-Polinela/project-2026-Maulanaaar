@@ -3,24 +3,24 @@ from .views import *
 
 urlpatterns = [
 
-    # 🔥 HOME
+    # HOME
     path('', HomeView.as_view(), name='home'),
 
-    # 🔥 REPORT LIST
+    # REPORT LIST
     path('reports/', ReportListView.as_view(), name='report_list'),
 
     # =========================================
-    # 🔥 API SECTION
+    # API SECTION
     # =========================================
 
     # DETAIL (UNTUK MODAL)
     path('api/report/<int:pk>/', report_detail_api, name='report_detail_api'),
 
-    # 🔥 LIVE SEARCH (INI YANG WAJIB DIPAKAI)
+    # LIVE SEARCH (INI YANG WAJIB DIPAKAI)
     path('api/search/', report_search_api, name='report_search_api'),
 
     # =========================================
-    # 🔥 CRUD
+    # CRUD
     # =========================================
 
     path('reports/<int:pk>/', ReportDetailView.as_view(), name='report_detail'),
@@ -32,4 +32,16 @@ urlpatterns = [
     path('reports/<int:pk>/delete/', ReportDeleteView.as_view(), name='delete_report'),
 
     path('reports/<int:pk>/status/', ReportUpdateStatusView.as_view(), name='update_status'),
+
+    path(
+    'api/search/',
+    report_search_api,
+    name='report_search'
+    ),
+
+    path(
+    'reports/<int:pk>/edit/',
+    ReportUpdateView.as_view(),
+    name='update_report'
+    ),
 ]

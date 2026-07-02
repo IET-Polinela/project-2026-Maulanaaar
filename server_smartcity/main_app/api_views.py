@@ -28,22 +28,30 @@ class ReportViewSet(viewsets.ModelViewSet):
 
         queryset = Report.objects.all().order_by("-updated_at")
 
-        tab = self.request.query_params.get("tab", None)
+        # Untuk list endpoint: /api/report/
+        if self.action == "list":
+            tab = self.request.query_params.get("tab")
 
-        if tab == "my_reports":
-            queryset = queryset.filter(reporter=user)
+            if tab == "my_reports":
+                # Tab laporan saya: tampilkan semua laporan milik user, termasuk DRAFT
+                return queryset.filter(reporter=user)
 
-        elif tab == "feed":
-            # Feed Kota publik: tampilkan semua laporan selain DRAFT
-            queryset = queryset.exclude(status="DRAFT")
+            if tab == "feed":
+                # Feed publik: hanya tampilkan laporan yang sudah diajukan
+                return queryset.exclude(status="DRAFT")
 
-        else:
-            # Default: tampilkan laporan publik non-DRAFT + DRAFT milik sendiri
-            queryset = queryset.filter(
+            # Default list: DRAFT milik sendiri + laporan publik non-DRAFT
+            return queryset.filter(
                 Q(status="DRAFT", reporter=user) | ~Q(status="DRAFT")
             )
 
-        return queryset
+        # Untuk retrieve/update/delete:
+        # - DRAFT milik sendiri boleh ditemukan
+        # - DRAFT milik orang lain disembunyikan menjadi 404
+        # - Laporan non-DRAFT boleh ditemukan, tapi update-nya dikontrol permission
+        return queryset.filter(
+            Q(status="DRAFT", reporter=user) | ~Q(status="DRAFT")
+        )
 
     def get_permissions(self):
         if self.action in ["list", "retrieve", "create"]:
@@ -52,7 +60,7 @@ class ReportViewSet(viewsets.ModelViewSet):
         elif self.action in ["update", "partial_update", "destroy"]:
             permission_classes = [
                 permissions.IsAuthenticated,
-                IsOwnerAndDraftOnly
+                IsOwnerAndDraftOnly,
             ]
 
         else:
@@ -63,19 +71,27 @@ class ReportViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         user = self.request.user
 
-        if getattr(user, "is_admin", False):
+        # Admin tidak boleh membuat laporan sebagai Citizen
+        if getattr(user, "is_admin", False) or getattr(user, "is_staff", False):
             raise PermissionDenied(
                 "Admin tidak diperbolehkan membuat laporan sebagai Citizen."
             )
 
-        if not getattr(user, "is_member", False):
-            raise PermissionDenied("Hanya Citizen yang dapat membuat laporan.")
-
         serializer.save(reporter=user, status="DRAFT")
 
-    # SKENARIO 1 LAB 14:
-    # Endpoint DELETE disembunyikan dari dokumentasi OpenAPI/Scalar,
-    # tetapi endpoint tetap harus diamankan dengan permission DRF.
+    def perform_update(self, serializer):
+        instance = self.get_object()
+        requested_status = self.request.data.get("status", instance.status)
+
+        # Kalau masih DRAFT, pemilik boleh simpan sebagai DRAFT atau ajukan ke REPORTED
+        if instance.status == "DRAFT":
+            serializer.save(status=requested_status)
+            return
+
+        # Sebenarnya bagian ini tidak akan tercapai untuk warga,
+        # karena permission sudah menolak update non-DRAFT dengan 403.
+        serializer.save()
+
     @extend_schema(exclude=True)
     def destroy(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)

@@ -4,10 +4,12 @@ from .models import Report
 
 class ReportSerializer(serializers.ModelSerializer):
     reporter = serializers.SerializerMethodField()
+    reporter_name = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
 
     class Meta:
         model = Report
+
         fields = [
             'id',
             'title',
@@ -15,8 +17,11 @@ class ReportSerializer(serializers.ModelSerializer):
             'description',
             'location',
             'status',
+
             'reporter',
+            'reporter_name',
             'is_owner',
+
             'created_at',
             'updated_at',
         ]
@@ -24,28 +29,36 @@ class ReportSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id',
             'reporter',
+            'reporter_name',
             'is_owner',
             'created_at',
             'updated_at',
         ]
 
     def get_reporter(self, obj):
-        # Identitas pelapor disamarkan langsung dari backend.
-        # Ini penting agar nama asli tidak bocor lewat Tab Network browser.
+        return "Warga Anonim"
+
+    def get_reporter_name(self, obj):
+        request = self.context.get("request")
+
+        if not request:
+            return "Warga Anonim"
+
+        if request.query_params.get("tab") == "my_reports":
+            return obj.reporter.username
+
         return "Warga Anonim"
 
     def get_is_owner(self, obj):
-        request = self.context.get('request')
+        request = self.context.get("request")
 
-        if request and request.user and request.user.is_authenticated:
+        if request and request.user.is_authenticated:
             return obj.reporter == request.user
 
         return False
 
     def validate_status(self, value):
-        # Citizen hanya boleh menyimpan laporan sebagai DRAFT
-        # atau mengajukan laporan menjadi REPORTED.
-        allowed_status = ['DRAFT', 'REPORTED']
+        allowed_status = ["DRAFT", "REPORTED"]
 
         if value not in allowed_status:
             raise serializers.ValidationError(
