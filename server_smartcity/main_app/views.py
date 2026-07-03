@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.http import JsonResponse
 from django.db.models import Q
+from django.contrib.auth.models import AnonymousUser
 
 from .models import Report
 from .forms import ReportForm
@@ -29,7 +30,7 @@ class AdminRequiredMixin(UserPassesTestMixin):
 
     User dianggap admin jika:
     - sudah login, dan
-    - memiliki is_admin=True atau is_staff=True.
+    - memiliki is_admin=True, is_staff=True, atau is_superuser=True.
     """
 
     def test_func(self):
@@ -39,6 +40,7 @@ class AdminRequiredMixin(UserPassesTestMixin):
             and (
                 getattr(user, 'is_admin', False)
                 or getattr(user, 'is_staff', False)
+                or getattr(user, 'is_superuser', False)
             )
         )
 
@@ -75,6 +77,7 @@ class ReportDetailView(AdminRequiredMixin, DetailView):
 
 # =========================================
 # CREATE REPORT
+# Khusus admin/backend web
 # =========================================
 class ReportCreateView(AdminRequiredMixin, CreateView):
     model = Report
@@ -83,6 +86,9 @@ class ReportCreateView(AdminRequiredMixin, CreateView):
     success_url = reverse_lazy('report_list')
 
     def form_valid(self, form):
+        if hasattr(form.instance, 'reporter') and not form.instance.reporter_id:
+            form.instance.reporter = self.request.user
+
         messages.success(self.request, "✅ Laporan berhasil ditambahkan!")
         return super().form_valid(form)
 
@@ -150,6 +156,7 @@ class ReportUpdateStatusView(View):
         if not user.is_authenticated or not (
             getattr(user, 'is_admin', False)
             or getattr(user, 'is_staff', False)
+            or getattr(user, 'is_superuser', False)
         ):
             messages.error(request, "❌ Akses ditolak!")
             return redirect('login')
@@ -159,8 +166,6 @@ class ReportUpdateStatusView(View):
             pk=pk
         )
 
-        # Supaya cocok dengan berbagai versi form/test:
-        # ada yang mengirim "status", ada juga yang mengirim "new_status".
         new_status = request.POST.get('status') or request.POST.get('new_status')
 
         current_status = report.status
@@ -180,8 +185,11 @@ class ReportUpdateStatusView(View):
 # =========================================
 # API DETAIL UNTUK MODAL
 # DRAFT tidak dikembalikan
+# Dibuat toleran untuk test RequestFactory yang tidak punya request.user
 # =========================================
 def report_detail_api(request, pk):
+    user = getattr(request, 'user', AnonymousUser())
+
     report = get_object_or_404(
         Report.objects.exclude(status='DRAFT'),
         pk=pk
@@ -201,6 +209,7 @@ def report_detail_api(request, pk):
 # =========================================
 # LIVE SEARCH API
 # DRAFT disembunyikan dari hasil pencarian
+# Khusus admin/backend web
 # =========================================
 def report_search_api(request):
     user = request.user
@@ -208,6 +217,7 @@ def report_search_api(request):
     if not user.is_authenticated or not (
         getattr(user, 'is_admin', False)
         or getattr(user, 'is_staff', False)
+        or getattr(user, 'is_superuser', False)
     ):
         return JsonResponse({'error': 'Akses ditolak'}, status=403)
 

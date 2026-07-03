@@ -13,7 +13,7 @@ class DashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 
     def test_func(self):
         """
-        Dashboard hanya boleh diakses oleh admin/staff.
+        Dashboard backend hanya boleh diakses admin/staff/superuser.
         Warga biasa tidak boleh mendapat response 200.
         """
         user = self.request.user
@@ -23,6 +23,7 @@ class DashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
             and (
                 getattr(user, 'is_admin', False)
                 or getattr(user, 'is_staff', False)
+                or getattr(user, 'is_superuser', False)
             )
         )
 
@@ -30,8 +31,6 @@ class DashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         """
         Jika user belum login atau bukan admin/staff,
         arahkan kembali ke halaman login.
-
-        Ini membuat response menjadi 302, sesuai ekspektasi test AUTH-03.
         """
         return redirect('login')
 
@@ -43,7 +42,6 @@ class DashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         context['total'] = reports.count()
         context['reported'] = reports.filter(status='REPORTED').count()
         context['resolved'] = reports.filter(status='RESOLVED').count()
-
         context['verified'] = reports.filter(status='VERIFIED').count()
         context['in_progress'] = reports.filter(status='IN_PROGRESS').count()
 
@@ -56,13 +54,14 @@ class DashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 def dashboard_data(request):
     """
     Endpoint data dashboard untuk Chart.js.
-    Hanya admin/staff yang boleh mengakses.
+    Hanya admin/staff/superuser yang boleh mengakses.
     """
     user = request.user
 
     if not user.is_authenticated or not (
         getattr(user, 'is_admin', False)
         or getattr(user, 'is_staff', False)
+        or getattr(user, 'is_superuser', False)
     ):
         return JsonResponse({'error': 'Akses ditolak'}, status=403)
 

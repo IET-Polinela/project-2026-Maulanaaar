@@ -22,19 +22,13 @@ function setupLoginForm() {
         const usernameInput = document.getElementById("username");
         const passwordInput = document.getElementById("password");
         const loginButton = document.getElementById("login-button");
-        const loginMessage = document.getElementById("login-message");
-
         const username = usernameInput.value.trim();
         const password = passwordInput.value.trim();
 
-        loginMessage.innerHTML = "";
+        setLoginMessage("", "");
 
         if (!username || !password) {
-            loginMessage.innerHTML = `
-                <div class="alert alert-warning">
-                    Username dan password wajib diisi.
-                </div>
-            `;
+            setLoginMessage("warning", "Username dan password wajib diisi.");
             return;
         }
 
@@ -60,11 +54,7 @@ function setupLoginForm() {
             localStorage.setItem("refresh_token", result.data.refresh);
             localStorage.setItem("username", username);
 
-            loginMessage.innerHTML = `
-                <div class="alert alert-success">
-                    Login berhasil. Token berhasil disimpan.
-                </div>
-            `;
+            setLoginMessage("success", "Login berhasil. Token berhasil disimpan.");
 
             setTimeout(function () {
                 window.location.hash = "#dashboard";
@@ -72,13 +62,31 @@ function setupLoginForm() {
         } else {
             const errorMessage = result.data?.detail || "Login gagal. Periksa username dan password.";
 
-            loginMessage.innerHTML = `
-                <div class="alert alert-danger">
-                    ${errorMessage}
-                </div>
-            `;
+            setLoginMessage("danger", errorMessage);
         }
     });
+}
+
+/**
+ * Menampilkan pesan login tanpa menyisipkan teks API sebagai HTML mentah.
+ */
+function setLoginMessage(type, message) {
+    const loginMessage = document.getElementById("login-message");
+
+    if (!loginMessage) {
+        return;
+    }
+
+    loginMessage.innerHTML = "";
+
+    if (!type || !message) {
+        return;
+    }
+
+    const alertElement = document.createElement("div");
+    alertElement.className = `alert alert-${type}`;
+    alertElement.textContent = message;
+    loginMessage.appendChild(alertElement);
 }
 
 /**

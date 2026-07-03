@@ -49,7 +49,9 @@ class ReportSerializer(serializers.ModelSerializer):
             return "Warga Anonim"
 
         if request.query_params.get("tab") == "my_reports":
-            return obj.reporter.username
+            if obj.reporter:
+                return obj.reporter.username
+            return "Warga Anonim"
 
         return "Warga Anonim"
 

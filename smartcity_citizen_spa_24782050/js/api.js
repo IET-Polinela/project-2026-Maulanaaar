@@ -1,7 +1,7 @@
 const API_BASE_URL = (
     window.SMARTCITY_API_BASE_URL ||
     localStorage.getItem("SMARTCITY_API_BASE_URL") ||
-    "http://103.151.63.86:8004"
+    "http://103.151.63.86:8004/api"
 ).replace(/\/$/, "");
 
 /**
@@ -15,8 +15,10 @@ const API_BASE_URL = (
  * - Contoh override di index.html:
  *   window.SMARTCITY_API_BASE_URL = "https://nama-backend.onrender.com/api";
  */
-async function requestAPI(endpoint, method = "GET", bodyData = null) {
+async function requestAPI(endpoint, method = "GET", bodyData = null, allowRefresh = true) {
     const accessToken = localStorage.getItem("access_token");
+    const isLoginRequest = endpoint.startsWith("/token/");
+    const isRefreshRequest = endpoint.startsWith("/token/refresh/");
 
     const headers = {
         "Content-Type": "application/json"
@@ -46,6 +48,14 @@ async function requestAPI(endpoint, method = "GET", bodyData = null) {
             data = null;
         }
 
+        if (response.status === 401 && !isLoginRequest && !isRefreshRequest) {
+            if (allowRefresh && await refreshAccessToken()) {
+                return await requestAPI(endpoint, method, bodyData, false);
+            }
+
+            clearSessionAndRedirect();
+        }
+
         return {
             ok: response.ok,
             status: response.status,
@@ -62,6 +72,60 @@ async function requestAPI(endpoint, method = "GET", bodyData = null) {
                 detail: "Tidak dapat terhubung ke server API."
             }
         };
+    }
+}
+
+/**
+ * Silent refresh access token menggunakan refresh_token.
+ * Sesuai skenario AUTH-05 Lab Session 15.
+ */
+async function refreshAccessToken() {
+    const refreshToken = localStorage.getItem("refresh_token");
+
+    if (!refreshToken) {
+        return false;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/token/refresh/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                refresh: refreshToken
+            })
+        });
+
+        if (!response.ok) {
+            return false;
+        }
+
+        const data = await response.json();
+
+        if (!data.access) {
+            return false;
+        }
+
+        localStorage.setItem("access_token", data.access);
+        return true;
+    } catch (error) {
+        console.error("Gagal refresh access token:", error);
+        return false;
+    }
+}
+
+/**
+ * Bersihkan sesi saat access dan refresh token sama-sama tidak valid.
+ */
+function clearSessionAndRedirect() {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("username");
+
+    if (window.location.hash !== "#login") {
+        alert("Sesi login tidak valid atau sudah habis. Silakan login ulang.");
+        window.location.hash = "#login";
     }
 }
 

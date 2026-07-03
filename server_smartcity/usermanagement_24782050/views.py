@@ -1,19 +1,19 @@
 from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .forms import RegisterForm   # 🔥 PAKAI INI
+from .forms import RegisterForm   #
 
 def register_view(request):
     if request.method == 'POST':
-        form = RegisterForm(request.POST)  # 🔥 GANTI DI SINI
+        form = RegisterForm(request.POST)
 
         if form.is_valid():
             user = form.save()
 
-            # 🔥 AUTO LOGIN
+            # AUTO LOGIN
             login(request, user)
 
-            # 🔥 ALERT
+            # ALERT
             messages.success(request, "Registrasi berhasil! Anda sudah login.")
 
             return redirect('home')

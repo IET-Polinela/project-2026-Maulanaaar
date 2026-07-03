@@ -6,7 +6,7 @@ const navMenu = document.getElementById("nav-menu");
  */
 function renderNavbar() {
     if (isLoggedIn()) {
-        const username = localStorage.getItem("username") || "Citizen";
+        const username = escapeHtml(localStorage.getItem("username") || "Citizen");
 
         navMenu.innerHTML = `
             <li class="nav-item">
@@ -121,7 +121,7 @@ function renderLoginPage() {
 }
 
 /**
- * Halaman Dashboard Citizen untuk Lab Session 12.
+ * Halaman Dashboard Citizen untuk Lab Session 15.
  */
 function renderDashboardPage() {
     if (!isLoggedIn()) {
@@ -129,7 +129,7 @@ function renderDashboardPage() {
         return;
     }
 
-    const username = localStorage.getItem("username") || "Citizen";
+    const username = escapeHtml(localStorage.getItem("username") || "Citizen");
 
     appContent.innerHTML = `
         <section class="page-section">
@@ -287,6 +287,11 @@ function handleRoute() {
     const hash = window.location.hash || "#login";
 
     if (hash === "#login") {
+        if (isLoggedIn()) {
+            window.location.hash = "#dashboard";
+            return;
+        }
+
         renderLoginPage();
     } else if (hash === "#dashboard") {
         renderDashboardPage();

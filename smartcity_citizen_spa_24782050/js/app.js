@@ -1,5 +1,5 @@
 /**
- * File utama aplikasi Lab Session 12.
+ * File utama aplikasi Lab Session 15.
  * Berisi logic Fetch API, render card laporan, pagination,
  * summary sidebar, serta modal tambah/edit laporan.
  */
@@ -197,7 +197,9 @@ function renderList(reports) {
         const progressClass = getProgressClass(report.status);
         const updatedAt = formatDate(report.updated_at);
 
-        const reporterName = report.is_owner ? "Anda" : (report.reporter || "Warga Anonim");
+        const reporterName = report.is_owner
+            ? (report.reporter_name || "Anda")
+            : (report.reporter || report.reporter_name || "Warga Anonim");
 
         const editButton = (
             currentTab === "my_reports" &&

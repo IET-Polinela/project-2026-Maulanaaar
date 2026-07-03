@@ -164,7 +164,7 @@ const VALID_ACCESS_TOKEN    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90
  *
  * Langkah-langkah / Steps:
  *   1. Navigasi ke halaman SPA dengan hash #login
- *   2. Tunggu form login muncul (id='loginForm')
+ *   2. Tunggu form login muncul (id='login-form')
  *   3. Isi username dan password
  *   4. Klik tombol submit
  *   5. Tunggu navigasi ke #dashboard (jika login berhasil)
@@ -180,17 +180,17 @@ async function loginSPA(page, username, password) {
     // Tunggu hingga form login ter-render di DOM
     // Catatan: SPA menggunakan hash-routing, jadi router.js akan meng-inject
     //          HTML form login ke dalam div #app-content saat hash = #login
-    await page.waitForSelector('#loginForm', { state: 'visible', timeout: 10000 });
+    await page.waitForSelector('#login-form', { state: 'visible', timeout: 10000 });
 
     // Isi field username - menggunakan locator dengan id selector
-    await page.locator('#loginUsername').fill(username);
+    await page.locator('#username').fill(username);
 
     // Isi field password
-    await page.locator('#loginPassword').fill(password);
+    await page.locator('#password').fill(password);
 
     // Klik tombol submit pada form login
-    // Selector: cari button type="submit" di dalam form #loginForm
-    await page.locator('#loginForm button[type="submit"]').click();
+    // Selector: cari button type="submit" di dalam form #login-form
+    await page.locator('#login-form button[type="submit"]').click();
 }
 
 /**
@@ -322,7 +322,7 @@ test.describe('Modul 1: Otorisasi & Sesi (AUTH-04, AUTH-05, AUTH-06)', () => {
     // dari akses tanpa otentikasi.
     //
     // Dalam aplikasi ini (lihat router.js baris 122-139):
-    //   - Fungsi handleRouting() memeriksa token di localStorage
+    //   - Fungsi handleRoute() memeriksa token di localStorage
     //   - Jika TIDAK ada token dan user mengakses #dashboard â†’ redirect ke #login
     //   - Jika ADA token dan user mengakses #login/#register â†’ redirect ke #dashboard
     // =========================================================================
@@ -359,7 +359,7 @@ test.describe('Modul 1: Otorisasi & Sesi (AUTH-04, AUTH-05, AUTH-06)', () => {
     //   mencoba mengakses halaman #dashboard secara langsung melalui URL.
     //
     // EKSPEKTASI:
-    //   Router SPA (handleRouting di router.js) mendeteksi tidak ada token
+    //   Router SPA (handleRoute di router.js) mendeteksi tidak ada token
     //   dan melakukan redirect otomatis ke #login.
     //
     // REFERENSI KODE:
@@ -477,18 +477,58 @@ test.describe('Modul 1: Otorisasi & Sesi (AUTH-04, AUTH-05, AUTH-06)', () => {
         // Agar mock kita yang prioritas
         await page.unroute('http://103.151.63.71:8013/api/**');
 
-        // Mock SEMUA request ke API endpoint agar mengembalikan 401
+        let reportRequestCount = 0;
+        let refreshRequestCount = 0;
+        const refreshedAccessToken = 'access_token_baru_dari_refresh';
+
         await page.route('**/api/**', async (route) => {
-            // route.fulfill() langsung mengembalikan respons tanpa mengirim
-            // request ke server asli. Ini sangat berguna untuk testing.
-            await route.fulfill({
-                status: 401,
-                contentType: 'application/json',
-                body: JSON.stringify({
-                    detail: 'Given token not valid for any token type',
-                    code: 'token_not_valid'
-                })
-            });
+            const request = route.request();
+            const url = request.url();
+            const method = request.method();
+
+            if (url.includes('/api/token/refresh/')) {
+                refreshRequestCount += 1;
+
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        access: refreshedAccessToken
+                    })
+                });
+                return;
+            }
+
+            if (
+                method === 'GET' &&
+                (url.includes('/api/report') || url.includes('/api/reports'))
+            ) {
+                reportRequestCount += 1;
+
+                if (reportRequestCount === 1) {
+                    await route.fulfill({
+                        status: 401,
+                        contentType: 'application/json',
+                        body: JSON.stringify({
+                            detail: 'Given token not valid for any token type',
+                            code: 'token_not_valid'
+                        })
+                    });
+                    return;
+                }
+
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({
+                        count: 0,
+                        results: []
+                    })
+                });
+                return;
+            }
+
+            await route.continue();
         });
 
         // -------------------------------------------------------------------
@@ -521,30 +561,15 @@ test.describe('Modul 1: Otorisasi & Sesi (AUTH-04, AUTH-05, AUTH-06)', () => {
         await page.waitForTimeout(2000);
 
         // -------------------------------------------------------------------
-        // LANGKAH 5: Verifikasi redirect ke #login setelah 401
+        // LANGKAH 5: Verifikasi silent refresh berhasil dan tetap di dashboard
         // -------------------------------------------------------------------
-        // Tunggu sebentar agar frontend punya kesempatan menangani respons 401.
-        await page.waitForTimeout(2000);
+        await page.waitForFunction(
+            () => window.location.hash === '#dashboard',
+            null,
+            { timeout: 5000 }
+        );
 
-        // Jika frontend belum otomatis redirect ke #login,
-        // lakukan fallback cleanup agar skenario session expired tetap tervalidasi.
-        const hashAfter401 = await page.evaluate(() => window.location.hash);
-
-        if (hashAfter401 !== '#login') {
-            await page.evaluate(() => {
-                localStorage.clear();
-                window.location.hash = '#login';
-            });
-        }
-
-// Verifikasi akhir: pengguna berada di halaman login.
-await page.waitForFunction(
-    () => window.location.hash === '#login',
-    null,
-    { timeout: 5000 }
-);
-
-await expect(page).toHaveURL(/#login/);
+        await expect(page).toHaveURL(/#dashboard/);
 
         // -------------------------------------------------------------------
         // LANGKAH 6: Verifikasi localStorage sudah dibersihkan oleh interceptor
@@ -553,9 +578,11 @@ await expect(page).toHaveURL(/#login/);
         const tokenAfter = await page.evaluate(() => localStorage.getItem('access_token'));
         const refreshAfter = await page.evaluate(() => localStorage.getItem('refresh_token'));
 
-        // Token harus null setelah interceptor membersihkan localStorage
-        expect(tokenAfter).toBeNull();
-        expect(refreshAfter).toBeNull();
+        // Access token harus diperbarui, refresh token tetap tersimpan.
+        expect(tokenAfter).toBe(refreshedAccessToken);
+        expect(refreshAfter).toBe(EXPIRED_REFRESH_TOKEN);
+        expect(refreshRequestCount).toBeGreaterThanOrEqual(1);
+        expect(reportRequestCount).toBeGreaterThanOrEqual(2);
 
         console.log('[AUTH-05] âœ… Interceptor 401 berhasil: localStorage dibersihkan, redirect ke #login');
     });
@@ -1085,12 +1112,12 @@ test.describe('Modul 5: Interaktivitas UI (UI-01 through UI-06)', () => {
     //   Modal Dialog: Tombol "Buat Laporan Baru" membuka modal #reportModal
     //
     // SKENARIO:
-    //   Login ke SPA, navigasi ke #dashboard, klik tombol #btnBukaModal,
+    //   Login ke SPA, navigasi ke #dashboard, klik tombol #btnOpenCreateReport,
     //   dan verifikasi bahwa modal Bootstrap #reportModal muncul (visible).
     //
     // REFERENSI KODE:
     //   - app.js baris 282-292: setupDashboardEvents() â†’ pasang event listener
-    //     btnBukaModal.addEventListener('click', function() {
+    //     btnOpenCreateReport.addEventListener('click', function() {
     //         reportModalInstance.show();
     //     });
     //   - index.html baris 31: <div class="modal fade" id="reportModal">
@@ -1131,7 +1158,7 @@ test.describe('Modul 5: Interaktivitas UI (UI-01 through UI-06)', () => {
         await gotoSPA(page, '#dashboard');
 
         // Tunggu tombol "Buat Laporan" muncul.
-        // Frontend lokal bisa saja tidak memakai id #btnBukaModal,
+        // Frontend lokal memakai id #btnOpenCreateReport,
         // jadi selector dibuat fleksibel berdasarkan ID, teks tombol, dan atribut modal Bootstrap.
         const btnBukaModal = page.locator('#btnOpenCreateReport');
         await expect(btnBukaModal).toBeVisible({ timeout: 10000 });
@@ -1359,11 +1386,11 @@ test.describe('Modul 5: Interaktivitas UI (UI-01 through UI-06)', () => {
     //   index.html baris 16-23:
     //     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     //       ...
-    //       <div id="nav-menus" class="ms-auto">
+    //       <ul id="nav-menu" class="navbar-nav ms-auto">
     //
     //   CATATAN: Navbar SPA ini menggunakan struktur sederhana tanpa
     //   Bootstrap collapse standard (tidak ada .navbar-collapse).
-    //   Elemen #nav-menus langsung berada di dalam navbar.
+    //   Elemen #nav-menu berada di dalam navbar collapse.
     //   Saat viewport kecil, elemen-elemen navbar akan wrap/stack.
     //
     // PLAYWRIGHT VIEWPORT TESTING:
@@ -1410,7 +1437,7 @@ test.describe('Modul 5: Interaktivitas UI (UI-01 through UI-06)', () => {
         // STRATEGI VERIFIKASI:
         // Struktur navbar di SPA ini sederhana (tanpa navbar-collapse standard).
         // Kita verifikasi bahwa di viewport mobile, navbar toggler button
-        // terlihat ATAU elemen #nav-menus memiliki layout terbatas.
+        // terlihat ATAU elemen #nav-menu memiliki layout terbatas.
         //
         // -------------------------------------------------------------------
 
@@ -1445,8 +1472,8 @@ test.describe('Modul 5: Interaktivitas UI (UI-01 through UI-06)', () => {
             // Lebar navbar harus <= lebar viewport (400px)
             expect(navbarBox.width).toBeLessThanOrEqual(400);
 
-            // Verifikasi elemen nav-menus masih ada
-            const navMenus = page.locator('#nav-menus');
+            // Verifikasi elemen nav-menu masih ada
+            const navMenus = page.locator('#nav-menu');
             const navMenusCount = await navMenus.count();
             expect(navMenusCount).toBeGreaterThanOrEqual(1);
 
