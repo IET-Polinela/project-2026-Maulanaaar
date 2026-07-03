@@ -1,7 +1,7 @@
 const API_BASE_URL = (
     window.SMARTCITY_API_BASE_URL ||
     localStorage.getItem("SMARTCITY_API_BASE_URL") ||
-    "http://127.0.0.1:8000/api"
+    "http://103.151.63.86:8004"
 ).replace(/\/$/, "");
 
 /**
